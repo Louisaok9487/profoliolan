@@ -86,18 +86,10 @@
         let costModalState = { assetId: null, counter: 0 };
         const ADJUSTMENT_UNIT = 245;
 
-        // --- Data Migration for Short Names ---
         const shortNameMap = {
-            usg: 'USG',
-            usf: 'USF',
-            usv: 'USV',
-            usa: 'USA',
-            twf: 'TWF',
-            usm: 'USM',
-            vanguard_intl: 'Vanguard Intl',
-            vanguard_hedged: 'Vanguard Hedged',
-            foundation_us500: 'Foundation US500',
-            foundation_world: 'Foundation World',
+            usg: 'USG', usf: 'USF', usv: 'USV', usa: 'USA', twf: 'TWF', usm: 'USM',
+            vanguard_intl: 'Vanguard Intl', vanguard_hedged: 'Vanguard Hedged',
+            foundation_us500: 'Foundation US500', foundation_world: 'Foundation World',
             bitcoin_etf: 'Bitcoin ETF'
         };
 
@@ -123,7 +115,7 @@
                     { id: 'usa', name: 'Smart - US ESG ETF (USA)', ticker: 'USA.NZ', type: 'ETF', quantity: 4657.0000, costBasis: 19655.59, initialPrice: 5.0750 },
                     { id: 'twf', name: 'Smart - Total World ETF (TWF)', ticker: 'TWF.NZ', type: 'ETF', quantity: 2898.0000, costBasis: 5058.64, initialPrice: 4.3220 },
                     { id: 'usm', name: 'Smart - US Mid Cap ETF (USM)', ticker: 'USM.NZ', type: 'ETF', quantity: 1113.0000, costBasis: 5389.69, initialPrice: 9.2330 },
-                    { id: 'vanguard_intl', name: 'Vanguard Intl Shares Select Exclusions', type: 'Fund', quantity: 14563.6363, costBasis: 27262.22, manualPrice: 2.2127 },
+                    { id: 'vanguard_intl', name: 'Vanguard Intl Shares Select Exclusions', type: 'Fund', quantity: 14563.6363, costBasis: 27262.22, manualPrice: 2.4224 },
                     { id: 'vanguard_hedged', name: 'Vanguard Intl Shares Select Exclusions - NZD Hedged', type: 'Fund', quantity: 15159.7950, costBasis: 25939.28, manualPrice: 2.1563 },
                     { id: 'foundation_us500', name: 'Foundation Series US 500 Fund', type: 'Fund', quantity: 10815.8650, costBasis: 16417.50, manualPrice: 1.7387 },
                     { id: 'foundation_world', name: 'Foundation Series Total World Fund', type: 'Fund', quantity: 10044.7775, costBasis: 14427.50, manualPrice: 1.6320 },
@@ -134,10 +126,10 @@
                     { id: 'td_4', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 10000.00, value: 10000.00 },
                     { id: 'td_5', name: 'Term Deposit - BNZ (12M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00 },
                     { id: 'td_6', name: 'Term Deposit - Heartland (24M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00 },
-                    { id: 'cash', name: 'Cash on Hand (Unsettled)', type: 'Cash', quantity: 1, costBasis: 15500.00, value: 15500.00 }
+                    // *** FIX: Corrected cash on hand value based on user feedback ***
+                    { id: 'cash', name: 'Cash on Hand', type: 'Cash', quantity: 1, costBasis: 12100.00, value: 12100.00 }
                 ];
             }
-            // Add shortName to all assets if they don't have it (for migration)
             portfolio.forEach(asset => {
                 if (!asset.shortName && shortNameMap[asset.id]) {
                     asset.shortName = shortNameMap[asset.id];
@@ -360,17 +352,27 @@
             const numValue = value || 0;
             const formattedValue = isPercentage ? `${formatNumber(numValue, 2)}%` : formatCurrency(numValue);
             element.textContent = formattedValue;
-            element.className = 'text-3xl font-bold text-white mt-2'; // Reset classes for summary cards
+            
+            let classList = [];
             if (elementId.startsWith('total-')) {
-                 if (numValue > 0) { element.classList.add('text-green-400'); element.textContent = '+' + element.textContent; }
-                 else if (numValue < 0) { element.classList.add('text-red-400'); }
-                 else { element.classList.add('text-gray-400'); }
-            } else { // Table cells
-                element.className = 'px-4 py-4 whitespace-nowrap text-right font-medium';
-                if (numValue > 0) { element.classList.add('text-green-400'); element.textContent = '+' + element.textContent; }
-                else if (numValue < 0) { element.classList.add('text-red-400'); }
-                else { element.classList.add('text-gray-400'); }
+                classList.push('text-3xl', 'font-bold', 'text-white', 'mt-2');
+            } else {
+                classList.push('px-4', 'py-4', 'whitespace-nowrap', 'text-right', 'font-medium');
             }
+
+            if (numValue > 0) {
+                classList.push('text-green-400');
+                element.textContent = '+' + element.textContent;
+            } else if (numValue < 0) {
+                classList.push('text-red-400');
+            } else {
+                if (elementId.startsWith('total-')) {
+                    classList.push('text-white');
+                } else {
+                    classList.push('text-gray-400');
+                }
+            }
+            element.className = classList.join(' ');
         }
     </script>
 </body>
