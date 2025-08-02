@@ -58,14 +58,14 @@
                     <svg class="animate-spin h-8 w-8 text-blue-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     <p class="mt-4 text-gray-400">正在從 API 獲取 ETF 即時價格...</p>
                 </div>
-                <div id="portfolio-table-container" class="table-container hidden"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('shortName')">名稱<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('quantity')">數量<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('costBasis')">總成本<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentPrice')">目前價格<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentValue')">目前價值<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('pl')">損益 ($)<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('return')">報酬率 (%)<span class="sort-icon">⇅</span></th></tr></thead><tbody id="portfolio-body" class="bg-gray-800 divide-y divide-gray-700"></tbody></table></div>
+                <div id="portfolio-table-container" class="table-container hidden"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('shortName')">名稱<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('quantity')">數量<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('costBasis')">總成本<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentPrice')">目前價格<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentValue')">目前價值<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('pl')">損益 ($)<span class="sort-icon">⇅</span></th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('return')">報酬率 (%)<span class="sort-icon">⇅</span></th></tr></thead><tbody id="portfolio-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="portfolio-footer"></tfoot></table></div>
             </div>
         </div>
 
         <div id="view-other" class="hidden">
             <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
                 <div class="flex justify-end mb-4"><button onclick="openOtherAssetModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">新增資產</button></div>
-                <div class="table-container"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">名稱</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">價值</th><th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="other-assets-body" class="bg-gray-800 divide-y divide-gray-700"></tbody></table></div>
+                <div class="table-container"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">名稱</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">價值</th><th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="other-assets-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="other-assets-footer"></tfoot></table></div>
             </div>
         </div>
         
@@ -126,7 +126,6 @@
                     { id: 'td_4', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 10000.00, value: 10000.00 },
                     { id: 'td_5', name: 'Term Deposit - BNZ (12M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00 },
                     { id: 'td_6', name: 'Term Deposit - Heartland (24M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00 },
-                    // *** FIX: Corrected cash on hand value based on user feedback ***
                     { id: 'cash', name: 'Cash on Hand', type: 'Cash', quantity: 1, costBasis: 12100.00, value: 12100.00 }
                 ];
             }
@@ -237,6 +236,8 @@
         function updateAllCalculations() {
             let totalValue = 0;
             let totalCost = 0;
+            let mainAssetsTotalValue = 0;
+            let otherAssetsTotalValue = 0;
 
             portfolio.forEach(asset => {
                 let currentValue, currentPrice, pl, plReturn;
@@ -254,6 +255,7 @@
                     asset.currentValue = currentValue;
                     asset.pl = pl;
                     asset.return = plReturn;
+                    mainAssetsTotalValue += currentValue;
 
                     const valueCell = document.getElementById(`value-${asset.id}`);
                     if (valueCell) {
@@ -264,6 +266,7 @@
                     }
                 } else {
                     currentValue = asset.value;
+                    otherAssetsTotalValue += currentValue;
                 }
                 totalValue += currentValue;
                 totalCost += asset.costBasis;
@@ -274,6 +277,31 @@
             document.getElementById('total-value').textContent = formatCurrency(totalValue);
             updatePlCell('total-pl', totalPl);
             updatePlCell('total-return', totalReturn, true);
+
+            renderPortfolioFooter(mainAssetsTotalValue);
+            renderOtherAssetsFooter(otherAssetsTotalValue);
+        }
+
+        function renderPortfolioFooter(total) {
+            const footer = document.getElementById('portfolio-footer');
+            footer.innerHTML = `
+                <tr class="bg-gray-700/50 font-bold">
+                    <td class="px-4 py-3 text-right" colspan="4">投資組合總計</td>
+                    <td class="px-4 py-3 text-right">${formatCurrency(total)}</td>
+                    <td class="px-4 py-3" colspan="2"></td>
+                </tr>
+            `;
+        }
+
+        function renderOtherAssetsFooter(total) {
+            const footer = document.getElementById('other-assets-footer');
+            footer.innerHTML = `
+                <tr class="bg-gray-700/50 font-bold">
+                    <td class="px-4 py-3 text-right">定存與現金總計</td>
+                    <td class="px-4 py-3 text-right">${formatCurrency(total)}</td>
+                    <td class="px-4 py-3"></td>
+                </tr>
+            `;
         }
 
         // --- Modal Functions ---
