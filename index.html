@@ -91,7 +91,11 @@
             await loadPortfolioFromSupabase();
             mainAssets = portfolio.filter(a => a.type === 'ETF' || a.type === 'Fund');
             otherAssets = portfolio.filter(a => a.type === 'TermDeposit' || a.type === 'Cash');
+            
+            // *** FIX: Added missing call to renderMainTable() ***
+            renderMainTable();
             renderOtherAssetsTable();
+
             await fetchEtfPrices();
             document.getElementById('loading-spinner').style.display = 'none';
             document.getElementById('portfolio-table-container').style.display = 'block';
@@ -204,9 +208,6 @@
         }
         
         // --- 渲染與計算 (與之前版本類似) ---
-        // ... (此處省略大部分 UI 渲染和計算函數，因為它們的邏輯與前一版相同) ...
-        // ... 僅展示有修改或重要的部分 ...
-
         function renderMainTable() {
             const tbody = document.getElementById('portfolio-body');
             tbody.innerHTML = '';
