@@ -65,7 +65,7 @@
         <div id="view-other" class="hidden">
             <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
                 <div class="flex justify-end mb-4"><button onclick="openOtherAssetModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">新增資產</button></div>
-                <div class="table-container"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">名稱</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">價值</th><th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="other-assets-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="other-assets-footer"></tfoot></table></div>
+                <div class="table-container"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">名稱</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">利率</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">到期日</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">價值</th><th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="other-assets-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="other-assets-footer"></tfoot></table></div>
             </div>
         </div>
         
@@ -74,7 +74,7 @@
     
     <!-- Modals -->
     <div id="add-lot-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-1/3"><h3 class="text-lg font-bold text-white mb-4" id="add-lot-modal-title">新增購買紀錄</h3><div class="mt-4"><label for="add-lot-amount" class="block text-sm font-medium text-gray-300">購買 Lot 數量 (1 lot = 245 NZD)</label><input type="number" id="add-lot-amount" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="例如: 10"></div><input type="hidden" id="add-lot-asset-id"><div class="flex justify-end space-x-4 mt-6"><button onclick="closeAddLotModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button onclick="saveNewPurchase()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md">儲存</button></div></div></div>
-    <div id="other-asset-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-1/3"><h3 class="text-lg font-bold text-white mb-4" id="other-asset-modal-title">新增/編輯資產</h3><div><label for="other-asset-name" class="block text-sm font-medium text-gray-300">資產名稱</label><input type="text" id="other-asset-name" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div class="mt-4"><label for="other-asset-value" class="block text-sm font-medium text-gray-300">價值 (NZD)</label><input type="number" id="other-asset-value" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><input type="hidden" id="other-asset-id"><div class="flex justify-end space-x-4 mt-6"><button onclick="closeOtherAssetModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button onclick="saveOtherAsset()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md">儲存</button></div></div></div>
+    <div id="other-asset-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-1/3"><h3 class="text-lg font-bold text-white mb-4" id="other-asset-modal-title">新增/編輯資產</h3><div><label for="other-asset-name" class="block text-sm font-medium text-gray-300">資產名稱</label><input type="text" id="other-asset-name" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div class="mt-4"><label for="other-asset-value" class="block text-sm font-medium text-gray-300">價值 (NZD)</label><input type="number" id="other-asset-value" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div id="other-asset-details" class="mt-4 space-y-4"><hr class="border-gray-600"><div><label for="other-asset-rate" class="block text-sm font-medium text-gray-300">利率 (可選)</label><input type="text" id="other-asset-rate" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="例如: 5.10%"></div><div><label for="other-asset-maturity" class="block text-sm font-medium text-gray-300">到期日 (可選)</label><input type="text" id="other-asset-maturity" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="例如: 12 Aug 2025"></div></div><input type="hidden" id="other-asset-id"><div class="flex justify-end space-x-4 mt-6"><button onclick="closeOtherAssetModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button onclick="saveOtherAsset()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md">儲存</button></div></div></div>
     <div id="confirm-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-auto"><h3 class="text-lg font-bold text-white">確認刪除</h3><p class="text-gray-300 my-4" id="confirm-modal-text">您確定要刪除此項資產嗎？此操作無法復原。</p><div class="flex justify-end space-x-4"><button onclick="closeConfirmModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button id="confirm-delete-btn" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md">確認刪除</button></div></div></div>
 
     <script>
@@ -108,24 +108,31 @@
                 portfolio = JSON.parse(savedPortfolio);
             } else {
                 portfolio = [
+                    // ETFs (No change)
                     { id: 'usg', name: 'Smart - US Large Growth ETF (USG)', ticker: 'USG.NZ', type: 'ETF', quantity: 3538.0000, costBasis: 27779.05, initialPrice: 14.3430 },
                     { id: 'usf', name: 'Smart - US 500 ETF (USF)', ticker: 'USF.NZ', type: 'ETF', quantity: 2208.0000, costBasis: 28934.04, initialPrice: 18.8730 },
                     { id: 'usv', name: 'Smart - US Large Value ETF (USV)', ticker: 'USV.NZ', type: 'ETF', quantity: 4067.0000, costBasis: 20280.79, initialPrice: 5.8920 },
                     { id: 'usa', name: 'Smart - US ESG ETF (USA)', ticker: 'USA.NZ', type: 'ETF', quantity: 4657.0000, costBasis: 19655.59, initialPrice: 5.0750 },
                     { id: 'twf', name: 'Smart - Total World ETF (TWF)', ticker: 'TWF.NZ', type: 'ETF', quantity: 2898.0000, costBasis: 5058.64, initialPrice: 4.3220 },
                     { id: 'usm', name: 'Smart - US Mid Cap ETF (USM)', ticker: 'USM.NZ', type: 'ETF', quantity: 1113.0000, costBasis: 5389.69, initialPrice: 9.2330 },
-                    { id: 'vanguard_intl', name: 'Vanguard Intl Shares Select Exclusions', type: 'Fund', quantity: 14563.6363, costBasis: 27262.22, manualPrice: 2.4224 },
+                    
+                    // Funds (Updated manualPrice from screenshot)
+                    { id: 'vanguard_intl', name: 'Vanguard Intl Shares Select Exclusions', type: 'Fund', quantity: 14563.6363, costBasis: 27262.22, manualPrice: 2.4224 }, // Effective NZD price
                     { id: 'vanguard_hedged', name: 'Vanguard Intl Shares Select Exclusions - NZD Hedged', type: 'Fund', quantity: 15159.7950, costBasis: 25939.28, manualPrice: 2.1563 },
                     { id: 'foundation_us500', name: 'Foundation Series US 500 Fund', type: 'Fund', quantity: 10815.8650, costBasis: 16417.50, manualPrice: 1.7387 },
                     { id: 'foundation_world', name: 'Foundation Series Total World Fund', type: 'Fund', quantity: 10044.7775, costBasis: 14427.50, manualPrice: 1.6320 },
                     { id: 'bitcoin_etf', name: 'Bitcoin ETF PIE Fund', type: 'Fund', quantity: 88.8046, costBasis: 247.68, manualPrice: 2.7890 },
-                    { id: 'td_1', name: 'Term Deposit - BNZ (9M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00 },
-                    { id: 'td_2', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 20000.00, value: 20000.00 },
-                    { id: 'td_3', name: 'Term Deposit - BNZ (1M)', type: 'TermDeposit', quantity: 1, costBasis: 6000.00, value: 6000.00 },
-                    { id: 'td_4', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 10000.00, value: 10000.00 },
-                    { id: 'td_5', name: 'Term Deposit - BNZ (12M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00 },
-                    { id: 'td_6', name: 'Term Deposit - Heartland (24M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00 },
-                    { id: 'cash', name: 'Cash on Hand', type: 'Cash', quantity: 1, costBasis: 12100.00, value: 12100.00 }
+
+                    // Term Deposits (Updated with rate and maturityDate)
+                    { id: 'td_1', name: 'Term Deposit - BNZ (9M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '5.10%', maturityDate: '12 Aug 2025' },
+                    { id: 'td_2', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 20000.00, value: 20000.00, rate: '2.90%', maturityDate: '28 Aug 2025' },
+                    { id: 'td_3', name: 'Term Deposit - BNZ (1M)', type: 'TermDeposit', quantity: 1, costBasis: 6000.00, value: 6000.00, rate: '2.35%', maturityDate: '29 Aug 2025' },
+                    { id: 'td_4', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 10000.00, value: 10000.00, rate: '2.90%', maturityDate: '01 Sep 2025' },
+                    { id: 'td_5', name: 'Term Deposit - BNZ (12M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '4.95%', maturityDate: '12 Nov 2025' },
+                    { id: 'td_6', name: 'Term Deposit - Heartland (24M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '6.10%', maturityDate: '05 Jan 2026' },
+                    
+                    // Cash
+                    { id: 'cash', name: 'Cash on Hand', type: 'Cash', quantity: 1, costBasis: 12100.00, value: 12100.00, rate: null, maturityDate: null }
                 ];
             }
             portfolio.forEach(asset => {
@@ -175,7 +182,15 @@
             otherAssets.forEach(asset => {
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-700/50 transition-colors duration-200';
-                row.innerHTML = `<td class="px-4 py-4 whitespace-nowrap">${asset.name}</td><td class="px-4 py-4 whitespace-nowrap text-right">${formatCurrency(asset.value)}</td><td class="px-4 py-4 whitespace-nowrap text-center"><button onclick="openOtherAssetModal('${asset.id}')" class="text-blue-400 hover:text-blue-300 text-sm mr-3">編輯</button><button onclick="openConfirmModal('${asset.id}', '${asset.name}')" class="text-red-400 hover:text-red-300 text-sm">刪除</button></td>`;
+                row.innerHTML = `
+                    <td class="px-4 py-4 whitespace-nowrap">${asset.name}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-right">${asset.rate || 'N/A'}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-right">${asset.maturityDate || 'N/A'}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-right">${formatCurrency(asset.value)}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-center">
+                        <button onclick="openOtherAssetModal('${asset.id}')" class="text-blue-400 hover:text-blue-300 text-sm mr-3">編輯</button>
+                        <button onclick="openConfirmModal('${asset.id}', '${asset.name}')" class="text-red-400 hover:text-red-300 text-sm">刪除</button>
+                    </td>`;
                 tbody.appendChild(row);
             });
         }
@@ -296,7 +311,7 @@
             const footer = document.getElementById('other-assets-footer');
             footer.innerHTML = `
                 <tr class="bg-gray-700/50 font-bold">
-                    <td class="px-4 py-3 text-right">定存與現金總計</td>
+                    <td class="px-4 py-3 text-right" colspan="3">定存與現金總計</td>
                     <td class="px-4 py-3 text-right">${formatCurrency(total)}</td>
                     <td class="px-4 py-3"></td>
                 </tr>
@@ -367,17 +382,31 @@
             const nameInput = document.getElementById('other-asset-name');
             const valueInput = document.getElementById('other-asset-value');
             const idInput = document.getElementById('other-asset-id');
+            const detailsDiv = document.getElementById('other-asset-details');
+            const rateInput = document.getElementById('other-asset-rate');
+            const maturityInput = document.getElementById('other-asset-maturity');
+
             if (assetId) {
                 const asset = otherAssets.find(a => a.id === assetId);
                 title.textContent = '編輯資產';
                 nameInput.value = asset.name;
                 valueInput.value = asset.value;
                 idInput.value = asset.id;
+                if (asset.type === 'TermDeposit') {
+                    detailsDiv.classList.remove('hidden');
+                    rateInput.value = asset.rate || '';
+                    maturityInput.value = asset.maturityDate || '';
+                } else {
+                    detailsDiv.classList.add('hidden');
+                }
             } else {
                 title.textContent = '新增資產';
                 nameInput.value = '';
                 valueInput.value = '';
                 idInput.value = '';
+                detailsDiv.classList.remove('hidden');
+                rateInput.value = '';
+                maturityInput.value = '';
             }
             modal.classList.remove('hidden');
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
@@ -387,14 +416,28 @@
             const id = document.getElementById('other-asset-id').value;
             const name = document.getElementById('other-asset-name').value;
             const value = parseFloat(document.getElementById('other-asset-value').value);
+            const rate = document.getElementById('other-asset-rate').value;
+            const maturity = document.getElementById('other-asset-maturity').value;
+
             if (!name || isNaN(value)) { alert('請輸入有效的名稱和價值。'); return; }
+
+            const type = name.toLowerCase().includes('cash') ? 'Cash' : 'TermDeposit';
+
             if (id) {
                 const asset = portfolio.find(a => a.id === id);
                 asset.name = name;
                 asset.value = value;
                 asset.costBasis = value;
+                asset.type = type;
+                if (type === 'TermDeposit') {
+                    asset.rate = rate;
+                    asset.maturityDate = maturity;
+                } else {
+                    asset.rate = null;
+                    asset.maturityDate = null;
+                }
             } else {
-                const newAsset = { id: `other_${Date.now()}`, name, value, costBasis: value, type: name.toLowerCase().includes('cash') ? 'Cash' : 'TermDeposit' };
+                const newAsset = { id: `other_${Date.now()}`, name, value, costBasis: value, type, rate: type === 'TermDeposit' ? rate : null, maturityDate: type === 'TermDeposit' ? maturity : null };
                 portfolio.push(newAsset);
             }
             otherAssets = portfolio.filter(a => a.type === 'TermDeposit' || a.type === 'Cash');
