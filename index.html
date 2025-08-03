@@ -107,31 +107,27 @@
             if (savedPortfolio) {
                 portfolio = JSON.parse(savedPortfolio);
             } else {
+                // *** DATA UPDATED based on new performance screenshot ***
                 portfolio = [
-                    // ETFs (No change)
                     { id: 'usg', name: 'Smart - US Large Growth ETF (USG)', ticker: 'USG.NZ', type: 'ETF', quantity: 3538.0000, costBasis: 27779.05, initialPrice: 14.3430 },
                     { id: 'usf', name: 'Smart - US 500 ETF (USF)', ticker: 'USF.NZ', type: 'ETF', quantity: 2208.0000, costBasis: 28934.04, initialPrice: 18.8730 },
                     { id: 'usv', name: 'Smart - US Large Value ETF (USV)', ticker: 'USV.NZ', type: 'ETF', quantity: 4067.0000, costBasis: 20280.79, initialPrice: 5.8920 },
                     { id: 'usa', name: 'Smart - US ESG ETF (USA)', ticker: 'USA.NZ', type: 'ETF', quantity: 4657.0000, costBasis: 19655.59, initialPrice: 5.0750 },
                     { id: 'twf', name: 'Smart - Total World ETF (TWF)', ticker: 'TWF.NZ', type: 'ETF', quantity: 2898.0000, costBasis: 5058.64, initialPrice: 4.3220 },
                     { id: 'usm', name: 'Smart - US Mid Cap ETF (USM)', ticker: 'USM.NZ', type: 'ETF', quantity: 1113.0000, costBasis: 5389.69, initialPrice: 9.2330 },
-                    
-                    // Funds (Updated manualPrice from screenshot)
-                    { id: 'vanguard_intl', name: 'Vanguard Intl Shares Select Exclusions', type: 'Fund', quantity: 14563.6363, costBasis: 27262.22, manualPrice: 2.4224 }, // Effective NZD price
+                    { id: 'vanguard_intl', name: 'Vanguard Intl Shares Select Exclusions', type: 'Fund', quantity: 14563.6363, costBasis: 27262.22, manualPrice: 2.4224 },
                     { id: 'vanguard_hedged', name: 'Vanguard Intl Shares Select Exclusions - NZD Hedged', type: 'Fund', quantity: 15159.7950, costBasis: 25939.28, manualPrice: 2.1563 },
                     { id: 'foundation_us500', name: 'Foundation Series US 500 Fund', type: 'Fund', quantity: 10815.8650, costBasis: 16417.50, manualPrice: 1.7387 },
                     { id: 'foundation_world', name: 'Foundation Series Total World Fund', type: 'Fund', quantity: 10044.7775, costBasis: 14427.50, manualPrice: 1.6320 },
-                    { id: 'bitcoin_etf', name: 'Bitcoin ETF PIE Fund', type: 'Fund', quantity: 88.8046, costBasis: 247.68, manualPrice: 2.7890 },
-
-                    // Term Deposits (Updated with rate and maturityDate)
+                    { id: 'bitcoin_etf', name: 'Bitcoin ETF PIE Fund', type: 'Fund', quantity: 88.8046, costBasis: 247.68, manualPrice: 2.7890 }, // Assumed cost = value as no performance data
+                    
+                    // Other assets remain unchanged
                     { id: 'td_1', name: 'Term Deposit - BNZ (9M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '5.10%', maturityDate: '12 Aug 2025' },
                     { id: 'td_2', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 20000.00, value: 20000.00, rate: '2.90%', maturityDate: '28 Aug 2025' },
                     { id: 'td_3', name: 'Term Deposit - BNZ (1M)', type: 'TermDeposit', quantity: 1, costBasis: 6000.00, value: 6000.00, rate: '2.35%', maturityDate: '29 Aug 2025' },
                     { id: 'td_4', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 10000.00, value: 10000.00, rate: '2.90%', maturityDate: '01 Sep 2025' },
                     { id: 'td_5', name: 'Term Deposit - BNZ (12M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '4.95%', maturityDate: '12 Nov 2025' },
                     { id: 'td_6', name: 'Term Deposit - Heartland (24M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '6.10%', maturityDate: '05 Jan 2026' },
-                    
-                    // Cash
                     { id: 'cash', name: 'Cash on Hand', type: 'Cash', quantity: 1, costBasis: 12100.00, value: 12100.00, rate: null, maturityDate: null }
                 ];
             }
@@ -251,6 +247,7 @@
             let totalValue = 0;
             let totalCost = 0;
             let mainAssetsTotalValue = 0;
+            let mainAssetsTotalCost = 0;
             let otherAssetsTotalValue = 0;
 
             portfolio.forEach(asset => {
@@ -270,6 +267,7 @@
                     asset.pl = pl;
                     asset.return = plReturn;
                     mainAssetsTotalValue += currentValue;
+                    mainAssetsTotalCost += asset.costBasis;
 
                     const valueCell = document.getElementById(`value-${asset.id}`);
                     if (valueCell) {
@@ -292,16 +290,18 @@
             updatePlCell('total-pl', totalPl);
             updatePlCell('total-return', totalReturn, true);
 
-            renderPortfolioFooter(mainAssetsTotalValue);
+            renderPortfolioFooter(mainAssetsTotalValue, mainAssetsTotalCost);
             renderOtherAssetsFooter(otherAssetsTotalValue);
         }
 
-        function renderPortfolioFooter(total) {
+        function renderPortfolioFooter(totalValue, totalCost) {
             const footer = document.getElementById('portfolio-footer');
             footer.innerHTML = `
                 <tr class="bg-gray-700/50 font-bold">
-                    <td class="px-4 py-3 text-right" colspan="4">投資組合總計</td>
-                    <td class="px-4 py-3 text-right">${formatCurrency(total)}</td>
+                    <td class="px-4 py-3 text-right" colspan="2">投資組合總計</td>
+                    <td class="px-4 py-3 text-right text-gray-400">${formatCurrency(totalCost)}</td>
+                    <td class="px-4 py-3"></td>
+                    <td class="px-4 py-3 text-right">${formatCurrency(totalValue)}</td>
                     <td class="px-4 py-3" colspan="3"></td>
                 </tr>
             `;
