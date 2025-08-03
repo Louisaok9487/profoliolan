@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InvestNow 即時投資組合儀表板</title>
+    <title>InvestNow 即時投資組合儀表板 (Supabase)</title>
+    <!-- 引入 Supabase 和 Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: 'Inter', 'Noto Sans TC', sans-serif;
-        }
+        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; }
         .price-input {
             background-color: #374151; border: 1px solid #4b5563; border-radius: 0.375rem;
             padding: 0.25rem 0.5rem; width: 80px; text-align: right;
         }
-        .price-input:focus {
-            outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-        }
+        .price-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); }
         .table-container { overflow-x: auto; }
         .tab-button {
             padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid transparent;
@@ -26,9 +24,7 @@
         .sortable:hover { background-color: #374151; }
         .sort-icon { display: inline-block; margin-left: 8px; opacity: 0.5; transition: opacity 0.2s; }
         .sortable:hover .sort-icon { opacity: 1; }
-        .modal-backdrop {
-            transition: opacity 0.3s ease;
-        }
+        .modal-backdrop { transition: opacity 0.3s ease; }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -36,7 +32,7 @@
     <div class="container mx-auto p-4 md:p-8">
         <header class="mb-8 text-center">
             <h1 class="text-3xl md:text-4xl font-bold text-white">InvestNow 投資組合儀表板</h1>
-            <p class="text-gray-400 mt-2">即時追蹤您的紐西蘭投資組合表現</p>
+            <p class="text-gray-400 mt-2">即時追蹤您的紐西蘭投資組合表現 (已連接雲端)</p>
             <p id="last-updated" class="text-sm text-gray-500 mt-2">--</p>
         </header>
 
@@ -53,12 +49,8 @@
         <!-- 內容區域 -->
         <div id="view-portfolio">
             <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
-                <div id="api-error-message" class="hidden bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-4"><p><strong>API 錯誤：</strong>無法獲取即時 ETF 價格。目前顯示的為備用數據，總覽數值依然正確。</p></div>
-                <div id="loading-spinner" class="text-center py-8">
-                    <svg class="animate-spin h-8 w-8 text-blue-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <p class="mt-4 text-gray-400">正在從 API 獲取 ETF 即時價格...</p>
-                </div>
-                <div id="portfolio-table-container" class="table-container hidden"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('shortName')">名稱</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('quantity')">數量</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('costBasis')">總成本</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentPrice')">目前價格</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentValue')">目前價值</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('pl')">損益 ($)</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('return')">報酬率 (%)</th><th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="portfolio-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="portfolio-footer"></tfoot></table></div>
+                <div id="loading-spinner" class="text-center py-8"><svg class="animate-spin h-8 w-8 text-blue-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="mt-4 text-gray-400">正在從 Supabase 讀取數據...</p></div>
+                <div id="portfolio-table-container" class="table-container hidden"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('short_name')">名稱</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('quantity')">數量</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('cost_basis')">總成本</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentPrice')">目前價格</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentValue')">目前價值</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('pl')">損益 ($)</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('return')">報酬率 (%)</th><th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="portfolio-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="portfolio-footer"></tfoot></table></div>
             </div>
         </div>
 
@@ -77,86 +69,151 @@
     <div id="other-asset-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-1/3"><h3 class="text-lg font-bold text-white mb-4" id="other-asset-modal-title">新增/編輯資產</h3><div><label for="other-asset-name" class="block text-sm font-medium text-gray-300">資產名稱</label><input type="text" id="other-asset-name" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div class="mt-4"><label for="other-asset-value" class="block text-sm font-medium text-gray-300">價值 (NZD)</label><input type="number" id="other-asset-value" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div id="other-asset-details" class="mt-4 space-y-4"><hr class="border-gray-600"><div><label for="other-asset-rate" class="block text-sm font-medium text-gray-300">利率 (可選)</label><input type="text" id="other-asset-rate" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="例如: 5.10%"></div><div><label for="other-asset-maturity" class="block text-sm font-medium text-gray-300">到期日 (可選)</label><input type="text" id="other-asset-maturity" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="例如: 12 Aug 2025"></div></div><input type="hidden" id="other-asset-id"><div class="flex justify-end space-x-4 mt-6"><button onclick="closeOtherAssetModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button onclick="saveOtherAsset()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md">儲存</button></div></div></div>
     <div id="confirm-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-auto"><h3 class="text-lg font-bold text-white">確認刪除</h3><p class="text-gray-300 my-4" id="confirm-modal-text">您確定要刪除此項資產嗎？此操作無法復原。</p><div class="flex justify-end space-x-4"><button onclick="closeConfirmModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button id="confirm-delete-btn" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md">確認刪除</button></div></div></div>
 
-    <script>
-        const API_KEY = "626Qz1OgD4IQ9ti8gb4CTJcqyz6DjAhT";
+    <script type="module">
+        // --- 全局變數 ---
         let portfolio = [];
         let mainAssets = [];
         let otherAssets = [];
         let currentSort = { key: 'currentValue', order: 'desc' };
         const LOT_PRICE = 245;
+        const FMP_API_KEY = "626Qz1OgD4IQ9ti8gb4CTJcqyz6DjAhT";
+        
+        // --- Supabase 連接設定 ---
+        const SUPABASE_URL = 'https://vqaqiwfkwtgkbcccmhag.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxYXFpd2Zrd3Rna2JjY2NtaGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MTYwNTYsImV4cCI6MjA2ODI5MjA1Nn0.swbrvzUL0VxumglJO0153qAK7A_VM-Gx6j6X7TZ51Do';
+        const { createClient } = supabase;
+        const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const shortNameMap = {
-            usg: 'USG', usf: 'USF', usv: 'USV', usa: 'USA', twf: 'TWF', usm: 'USM',
-            vanguard_intl: 'Vanguard Intl', vanguard_hedged: 'Vanguard Hedged',
-            foundation_us500: 'Foundation US500', foundation_world: 'Foundation World',
-            bitcoin_etf: 'Bitcoin ETF'
-        };
-
+        // --- 初始化 ---
         document.addEventListener('DOMContentLoaded', initialize);
 
-        function initialize() {
-            loadPortfolio();
+        async function initialize() {
+            await loadPortfolioFromSupabase();
             mainAssets = portfolio.filter(a => a.type === 'ETF' || a.type === 'Fund');
             otherAssets = portfolio.filter(a => a.type === 'TermDeposit' || a.type === 'Cash');
             renderOtherAssetsTable();
-            fetchEtfPrices();
+            await fetchEtfPrices();
+            document.getElementById('loading-spinner').style.display = 'none';
+            document.getElementById('portfolio-table-container').style.display = 'block';
         }
         
-        function loadPortfolio() {
-            const savedPortfolio = localStorage.getItem('investNowPortfolio');
-            if (savedPortfolio) {
-                portfolio = JSON.parse(savedPortfolio);
-            } else {
-                // *** DATA UPDATED based on new performance screenshot ***
-                portfolio = [
-                    { id: 'usg', name: 'Smart - US Large Growth ETF (USG)', ticker: 'USG.NZ', type: 'ETF', quantity: 3538.0000, costBasis: 27779.05, initialPrice: 14.3430 },
-                    { id: 'usf', name: 'Smart - US 500 ETF (USF)', ticker: 'USF.NZ', type: 'ETF', quantity: 2208.0000, costBasis: 28934.04, initialPrice: 18.8730 },
-                    { id: 'usv', name: 'Smart - US Large Value ETF (USV)', ticker: 'USV.NZ', type: 'ETF', quantity: 4067.0000, costBasis: 20280.79, initialPrice: 5.8920 },
-                    { id: 'usa', name: 'Smart - US ESG ETF (USA)', ticker: 'USA.NZ', type: 'ETF', quantity: 4657.0000, costBasis: 19655.59, initialPrice: 5.0750 },
-                    { id: 'twf', name: 'Smart - Total World ETF (TWF)', ticker: 'TWF.NZ', type: 'ETF', quantity: 2898.0000, costBasis: 5058.64, initialPrice: 4.3220 },
-                    { id: 'usm', name: 'Smart - US Mid Cap ETF (USM)', ticker: 'USM.NZ', type: 'ETF', quantity: 1113.0000, costBasis: 5389.69, initialPrice: 9.2330 },
-                    { id: 'vanguard_intl', name: 'Vanguard Intl Shares Select Exclusions', type: 'Fund', quantity: 14563.6363, costBasis: 27262.22, manualPrice: 2.4224 },
-                    { id: 'vanguard_hedged', name: 'Vanguard Intl Shares Select Exclusions - NZD Hedged', type: 'Fund', quantity: 15159.7950, costBasis: 25939.28, manualPrice: 2.1563 },
-                    { id: 'foundation_us500', name: 'Foundation Series US 500 Fund', type: 'Fund', quantity: 10815.8650, costBasis: 16417.50, manualPrice: 1.7387 },
-                    { id: 'foundation_world', name: 'Foundation Series Total World Fund', type: 'Fund', quantity: 10044.7775, costBasis: 14427.50, manualPrice: 1.6320 },
-                    { id: 'bitcoin_etf', name: 'Bitcoin ETF PIE Fund', type: 'Fund', quantity: 88.8046, costBasis: 247.68, manualPrice: 2.7890 }, // Assumed cost = value as no performance data
-                    
-                    // Other assets remain unchanged
-                    { id: 'td_1', name: 'Term Deposit - BNZ (9M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '5.10%', maturityDate: '12 Aug 2025' },
-                    { id: 'td_2', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 20000.00, value: 20000.00, rate: '2.90%', maturityDate: '28 Aug 2025' },
-                    { id: 'td_3', name: 'Term Deposit - BNZ (1M)', type: 'TermDeposit', quantity: 1, costBasis: 6000.00, value: 6000.00, rate: '2.35%', maturityDate: '29 Aug 2025' },
-                    { id: 'td_4', name: 'Term Deposit - CCB (1M)', type: 'TermDeposit', quantity: 1, costBasis: 10000.00, value: 10000.00, rate: '2.90%', maturityDate: '01 Sep 2025' },
-                    { id: 'td_5', name: 'Term Deposit - BNZ (12M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '4.95%', maturityDate: '12 Nov 2025' },
-                    { id: 'td_6', name: 'Term Deposit - Heartland (24M)', type: 'TermDeposit', quantity: 1, costBasis: 2000.00, value: 2000.00, rate: '6.10%', maturityDate: '05 Jan 2026' },
-                    { id: 'cash', name: 'Cash on Hand', type: 'Cash', quantity: 1, costBasis: 12100.00, value: 12100.00, rate: null, maturityDate: null }
-                ];
+        async function loadPortfolioFromSupabase() {
+            const { data, error } = await db.from('assets').select('*');
+            if (error) {
+                console.error('從 Supabase 讀取數據失敗:', error);
+                alert('無法從雲端資料庫讀取您的投資組合，請檢查網路連線或 Supabase 設定。');
+                return;
             }
-            portfolio.forEach(asset => {
-                if (!asset.shortName && shortNameMap[asset.id]) {
-                    asset.shortName = shortNameMap[asset.id];
-                }
-            });
-            savePortfolio();
+            portfolio = data;
         }
 
-        function savePortfolio() {
-            localStorage.setItem('investNowPortfolio', JSON.stringify(portfolio));
+        // --- 核心功能 (Supabase 版本) ---
+        async function saveNewPurchase() {
+            const assetId = document.getElementById('add-lot-asset-id').value;
+            const lots = parseFloat(document.getElementById('add-lot-amount').value);
+            if (!assetId || isNaN(lots) || lots <= 0) {
+                alert('請輸入有效的 Lot 數量。'); return;
+            }
+
+            const asset = portfolio.find(a => a.asset_id === assetId);
+            const cashAsset = portfolio.find(a => a.asset_id === 'cash');
+
+            if (!asset || !cashAsset) { alert('找不到資產或現金項目。'); return; }
+
+            const cost = lots * LOT_PRICE;
+            if (cashAsset.value < cost) { alert('現金餘額不足！'); return; }
+
+            // 準備更新數據
+            const newCostBasis = asset.cost_basis + cost;
+            const newQuantity = asset.quantity + (cost / asset.currentPrice);
+            const newCashValue = cashAsset.value - cost;
+
+            // 更新投資項目
+            const { error: assetError } = await db.from('assets')
+                .update({ cost_basis: newCostBasis, quantity: newQuantity })
+                .eq('asset_id', assetId);
+
+            // 更新現金
+            const { error: cashError } = await db.from('assets')
+                .update({ value: newCashValue, cost_basis: newCashValue })
+                .eq('asset_id', 'cash');
+
+            if (assetError || cashError) {
+                alert('更新數據到雲端失敗，請稍後再試。');
+                console.error('Asset Error:', assetError, 'Cash Error:', cashError);
+            } else {
+                // 本地更新以立即反映
+                asset.cost_basis = newCostBasis;
+                asset.quantity = newQuantity;
+                cashAsset.value = newCashValue;
+                cashAsset.cost_basis = newCashValue;
+                
+                renderMainTable();
+                renderOtherAssetsTable();
+                updateAllCalculations();
+                closeAddLotModal();
+            }
         }
 
-        function switchTab(tabName) {
-            document.getElementById('view-portfolio').classList.toggle('hidden', tabName !== 'portfolio');
-            document.getElementById('view-other').classList.toggle('hidden', tabName !== 'other');
-            document.getElementById('tab-portfolio').classList.toggle('active', tabName === 'portfolio');
-            document.getElementById('tab-other').classList.toggle('active', tabName === 'other');
+        async function saveOtherAsset() {
+            const id = document.getElementById('other-asset-id').value; // This is the UUID
+            const name = document.getElementById('other-asset-name').value;
+            const value = parseFloat(document.getElementById('other-asset-value').value);
+            const rate = document.getElementById('other-asset-rate').value;
+            const maturity = document.getElementById('other-asset-maturity').value;
+
+            if (!name || isNaN(value)) { alert('請輸入有效的名稱和價值。'); return; }
+
+            const type = name.toLowerCase().includes('cash') ? 'Cash' : 'TermDeposit';
+            const assetData = {
+                name, value, cost_basis: value, type,
+                rate: type === 'TermDeposit' ? rate : null,
+                maturity_date: type === 'TermDeposit' ? maturity : null
+            };
+
+            let error;
+            if (id) { // 更新現有資產
+                const { error: updateError } = await db.from('assets').update(assetData).eq('id', id);
+                error = updateError;
+            } else { // 新增資產
+                assetData.asset_id = `other_${Date.now()}`; // Create a unique asset_id
+                assetData.short_name = name;
+                const { error: insertError } = await db.from('assets').insert([assetData]);
+                error = insertError;
+            }
+
+            if (error) {
+                alert('儲存數據到雲端失敗，請稍後再試。');
+                console.error('Save Other Asset Error:', error);
+            } else {
+                await initialize(); // 重新從雲端載入所有數據以確保同步
+                closeOtherAssetModal();
+            }
         }
+
+        async function confirmDelete() {
+            const id = document.getElementById('confirm-delete-btn').dataset.assetId;
+            const { error } = await db.from('assets').delete().eq('id', id);
+            if (error) {
+                alert('從雲端刪除數據失敗，請稍後再試。');
+                console.error('Delete Error:', error);
+            } else {
+                await initialize();
+                closeConfirmModal();
+            }
+        }
+        
+        // --- 渲染與計算 (與之前版本類似) ---
+        // ... (此處省略大部分 UI 渲染和計算函數，因為它們的邏輯與前一版相同) ...
+        // ... 僅展示有修改或重要的部分 ...
 
         function renderMainTable() {
             const tbody = document.getElementById('portfolio-body');
             tbody.innerHTML = '';
             mainAssets.sort((a, b) => {
                 const key = currentSort.key;
-                let valA = a[key] || (key === 'shortName' ? '' : 0);
-                let valB = b[key] || (key === 'shortName' ? '' : 0);
+                let valA = a[key] || (key === 'short_name' ? '' : 0);
+                let valB = b[key] || (key === 'short_name' ? '' : 0);
                 if (typeof valA === 'string') { valA = valA.toLowerCase(); valB = valB.toLowerCase(); }
                 if (valA < valB) return currentSort.order === 'asc' ? -1 : 1;
                 if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
@@ -164,10 +221,10 @@
             });
             mainAssets.forEach(asset => {
                 const row = document.createElement('tr');
-                row.id = `row-${asset.id}`;
+                row.id = `row-${asset.asset_id}`;
                 row.className = 'hover:bg-gray-700/50 transition-colors duration-200';
-                let priceCellContent = asset.type === 'ETF' ? `<span id="price-${asset.id}">...</span>` : `<input type="number" step="0.0001" value="${asset.manualPrice}" onchange="handleManualUpdate('${asset.id}', this.value)" class="price-input text-white">`;
-                row.innerHTML = `<td class="px-4 py-4 whitespace-nowrap"><div class="font-medium text-white" title="${asset.name}">${asset.shortName}</div><div class="text-sm text-gray-400">${asset.type}</div></td><td class="px-4 py-4 whitespace-nowrap text-right">${formatNumber(asset.quantity, 2)}</td><td class="px-4 py-4 whitespace-nowrap text-right text-gray-400">${formatCurrency(asset.costBasis)}</td><td class="px-4 py-4 whitespace-nowrap text-right">${priceCellContent}</td><td id="value-${asset.id}" class="px-4 py-4 whitespace-nowrap text-right font-semibold">...</td><td id="pl-${asset.id}" class="px-4 py-4 whitespace-nowrap text-right">...</td><td id="return-${asset.id}" class="px-4 py-4 whitespace-nowrap text-right font-medium">...</td><td class="px-4 py-4 whitespace-nowrap text-center"><button onclick="openAddLotModal('${asset.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-sm">新增購買</button></td>`;
+                let priceCellContent = asset.type === 'ETF' ? `<span id="price-${asset.asset_id}">...</span>` : `<input type="number" step="0.0001" value="${asset.manual_price}" onchange="handleManualUpdate('${asset.asset_id}', this.value)" class="price-input text-white">`;
+                row.innerHTML = `<td class="px-4 py-4 whitespace-nowrap"><div class="font-medium text-white" title="${asset.name}">${asset.short_name}</div><div class="text-sm text-gray-400">${asset.type}</div></td><td class="px-4 py-4 whitespace-nowrap text-right">${formatNumber(asset.quantity, 2)}</td><td class="px-4 py-4 whitespace-nowrap text-right text-gray-400">${formatCurrency(asset.cost_basis)}</td><td class="px-4 py-4 whitespace-nowrap text-right">${priceCellContent}</td><td id="value-${asset.asset_id}" class="px-4 py-4 whitespace-nowrap text-right font-semibold">...</td><td id="pl-${asset.asset_id}" class="px-4 py-4 whitespace-nowrap text-right">...</td><td id="return-${asset.asset_id}" class="px-4 py-4 whitespace-nowrap text-right font-medium">...</td><td class="px-4 py-4 whitespace-nowrap text-center"><button onclick="openAddLotModal('${asset.asset_id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-sm">新增購買</button></td>`;
                 tbody.appendChild(row);
             });
         }
@@ -178,324 +235,94 @@
             otherAssets.forEach(asset => {
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-700/50 transition-colors duration-200';
-                row.innerHTML = `
-                    <td class="px-4 py-4 whitespace-nowrap">${asset.name}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-right">${asset.rate || 'N/A'}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-right">${asset.maturityDate || 'N/A'}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-right">${formatCurrency(asset.value)}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-center">
-                        <button onclick="openOtherAssetModal('${asset.id}')" class="text-blue-400 hover:text-blue-300 text-sm mr-3">編輯</button>
-                        <button onclick="openConfirmModal('${asset.id}', '${asset.name}')" class="text-red-400 hover:text-red-300 text-sm">刪除</button>
-                    </td>`;
+                row.innerHTML = `<td class="px-4 py-4 whitespace-nowrap">${asset.name}</td><td class="px-4 py-4 whitespace-nowrap text-right">${asset.rate || 'N/A'}</td><td class="px-4 py-4 whitespace-nowrap text-right">${asset.maturity_date || 'N/A'}</td><td class="px-4 py-4 whitespace-nowrap text-right">${formatCurrency(asset.value)}</td><td class="px-4 py-4 whitespace-nowrap text-center"><button onclick="openOtherAssetModal('${asset.id}')" class="text-blue-400 hover:text-blue-300 text-sm mr-3">編輯</button><button onclick="openConfirmModal('${asset.id}', '${asset.name}')" class="text-red-400 hover:text-red-300 text-sm">刪除</button></td>`;
                 tbody.appendChild(row);
             });
         }
-
+        
         async function fetchEtfPrices() {
-            document.getElementById('loading-spinner').style.display = 'block';
-            document.getElementById('portfolio-table-container').style.display = 'none';
-            document.getElementById('api-error-message').classList.add('hidden');
-
             const etfs = mainAssets.filter(a => a.type === 'ETF');
             const tickers = etfs.map(etf => etf.ticker).join(',');
-            const url = `https://financialmodelingprep.com/api/v3/quote/${tickers}?apikey=${API_KEY}`;
-
+            const url = `https://financialmodelingprep.com/api/v3/quote/${tickers}?apikey=${FMP_API_KEY}`;
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`API 請求失敗: ${response.status}`);
+                if (!response.ok) throw new Error(`API 請求失敗`);
                 const data = await response.json();
-                if (!data || data.length === 0) throw new Error('API 回應為空');
-                
                 data.forEach(quote => {
                     const asset = etfs.find(etf => etf.ticker.startsWith(quote.symbol));
                     if (asset) asset.currentPrice = quote.price;
                 });
             } catch (error) {
                 console.error("獲取 ETF 價格失敗:", error);
-                document.getElementById('api-error-message').classList.remove('hidden');
             }
-            
-            renderMainTable();
             updateAllCalculations();
-
-            document.getElementById('loading-spinner').style.display = 'none';
-            document.getElementById('portfolio-table-container').style.display = 'block';
             document.getElementById('last-updated').textContent = `最後更新: ${new Date().toLocaleString('zh-TW')}`;
         }
-        
-        function handleManualUpdate(assetId, newPrice) {
-            const asset = portfolio.find(a => a.id === assetId);
-            if (asset) {
-                asset.manualPrice = parseFloat(newPrice);
-                savePortfolio();
+
+        async function handleManualUpdate(assetId, newPrice) {
+            const { error } = await db.from('assets').update({ manual_price: newPrice }).eq('asset_id', assetId);
+            if (error) {
+                alert('更新雲端數據失敗');
+            } else {
+                const asset = portfolio.find(a => a.asset_id === assetId);
+                asset.manual_price = parseFloat(newPrice);
                 updateAllCalculations();
             }
         }
-        
-        function handleSort(key) {
-            if (currentSort.key === key) {
-                currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort.key = key;
-                currentSort.order = 'asc';
-            }
-            renderMainTable();
-            updateAllCalculations();
-        }
 
         function updateAllCalculations() {
-            let totalValue = 0;
-            let totalCost = 0;
-            let mainAssetsTotalValue = 0;
-            let mainAssetsTotalCost = 0;
-            let otherAssetsTotalValue = 0;
-
+            let totalValue = 0, totalCost = 0, mainAssetsTotalValue = 0, mainAssetsTotalCost = 0, otherAssetsTotalValue = 0;
             portfolio.forEach(asset => {
                 let currentValue, currentPrice, pl, plReturn;
                 if (asset.type === 'ETF' || asset.type === 'Fund') {
-                    if (asset.type === 'ETF') {
-                        currentPrice = asset.currentPrice !== undefined ? asset.currentPrice : asset.initialPrice;
-                    } else {
-                        currentPrice = asset.manualPrice;
-                    }
+                    currentPrice = asset.type === 'ETF' ? (asset.currentPrice !== undefined ? asset.currentPrice : asset.initial_price) : asset.manual_price;
                     currentValue = currentPrice * asset.quantity;
-                    pl = currentValue - asset.costBasis;
-                    plReturn = (asset.costBasis > 0) ? (pl / asset.costBasis) * 100 : 0;
-                    
-                    asset.currentPrice = currentPrice;
-                    asset.currentValue = currentValue;
-                    asset.pl = pl;
-                    asset.return = plReturn;
-                    mainAssetsTotalValue += currentValue;
-                    mainAssetsTotalCost += asset.costBasis;
-
-                    const valueCell = document.getElementById(`value-${asset.id}`);
+                    pl = currentValue - asset.cost_basis;
+                    plReturn = (asset.cost_basis > 0) ? (pl / asset.cost_basis) * 100 : 0;
+                    asset.currentPrice = currentPrice; asset.currentValue = currentValue; asset.pl = pl; asset.return = plReturn;
+                    mainAssetsTotalValue += currentValue; mainAssetsTotalCost += asset.cost_basis;
+                    const valueCell = document.getElementById(`value-${asset.asset_id}`);
                     if (valueCell) {
-                        if (asset.type === 'ETF') { document.getElementById(`price-${asset.id}`).textContent = formatNumber(currentPrice, 2); }
+                        if (asset.type === 'ETF') { document.getElementById(`price-${asset.asset_id}`).textContent = formatNumber(currentPrice, 2); }
                         valueCell.textContent = formatCurrency(currentValue);
-                        updatePlCell(`pl-${asset.id}`, pl);
-                        updatePlCell(`return-${asset.id}`, plReturn, true);
+                        updatePlCell(`pl-${asset.asset_id}`, pl); updatePlCell(`return-${asset.asset_id}`, plReturn, true);
                     }
                 } else {
-                    currentValue = asset.value;
-                    otherAssetsTotalValue += currentValue;
+                    currentValue = asset.value; otherAssetsTotalValue += currentValue;
                 }
-                totalValue += currentValue;
-                totalCost += asset.costBasis;
+                totalValue += currentValue; totalCost += asset.cost_basis;
             });
-            
             const totalPl = totalValue - totalCost;
             const totalReturn = (totalCost > 0) ? (totalPl / totalCost) * 100 : 0;
             document.getElementById('total-value').textContent = formatCurrency(totalValue);
-            updatePlCell('total-pl', totalPl);
-            updatePlCell('total-return', totalReturn, true);
-
+            updatePlCell('total-pl', totalPl); updatePlCell('total-return', totalReturn, true);
             renderPortfolioFooter(mainAssetsTotalValue, mainAssetsTotalCost);
             renderOtherAssetsFooter(otherAssetsTotalValue);
         }
+        
+        // --- Globalizing functions for onclick handlers ---
+        window.switchTab = switchTab; window.handleSort = handleSort; window.openAddLotModal = openAddLotModal;
+        window.closeAddLotModal = closeAddLotModal; window.saveNewPurchase = saveNewPurchase;
+        window.openOtherAssetModal = openOtherAssetModal; window.closeOtherAssetModal = closeOtherAssetModal;
+        window.saveOtherAsset = saveOtherAsset; window.openConfirmModal = openConfirmModal;
+        window.closeConfirmModal = closeConfirmModal; window.confirmDelete = confirmDelete;
+        window.handleManualUpdate = handleManualUpdate;
 
-        function renderPortfolioFooter(totalValue, totalCost) {
-            const footer = document.getElementById('portfolio-footer');
-            footer.innerHTML = `
-                <tr class="bg-gray-700/50 font-bold">
-                    <td class="px-4 py-3 text-right" colspan="2">投資組合總計</td>
-                    <td class="px-4 py-3 text-right text-gray-400">${formatCurrency(totalCost)}</td>
-                    <td class="px-4 py-3"></td>
-                    <td class="px-4 py-3 text-right">${formatCurrency(totalValue)}</td>
-                    <td class="px-4 py-3" colspan="3"></td>
-                </tr>
-            `;
-        }
-
-        function renderOtherAssetsFooter(total) {
-            const footer = document.getElementById('other-assets-footer');
-            footer.innerHTML = `
-                <tr class="bg-gray-700/50 font-bold">
-                    <td class="px-4 py-3 text-right" colspan="3">定存與現金總計</td>
-                    <td class="px-4 py-3 text-right">${formatCurrency(total)}</td>
-                    <td class="px-4 py-3"></td>
-                </tr>
-            `;
-        }
-
-        // --- Modal Functions ---
-        function openAddLotModal(assetId) {
-            const modal = document.getElementById('add-lot-modal');
-            const asset = mainAssets.find(a => a.id === assetId);
-            document.getElementById('add-lot-modal-title').textContent = `新增購買: ${asset.shortName}`;
-            document.getElementById('add-lot-asset-id').value = assetId;
-            document.getElementById('add-lot-amount').value = '';
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-        }
-        function closeAddLotModal() {
-            const modal = document.getElementById('add-lot-modal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-        function saveNewPurchase() {
-            const assetId = document.getElementById('add-lot-asset-id').value;
-            const lots = parseFloat(document.getElementById('add-lot-amount').value);
-            if (!assetId || isNaN(lots) || lots <= 0) {
-                alert('請輸入有效的 Lot 數量。');
-                return;
-            }
-
-            const asset = portfolio.find(a => a.id === assetId);
-            const cashAsset = portfolio.find(a => a.id === 'cash');
-
-            if (!asset) {
-                alert('找不到資產。');
-                return;
-            }
-            if (!cashAsset) {
-                alert('找不到現金資產 (Cash on Hand)。請先在「定存與現金」分頁新增一個名為 "Cash on Hand" 的項目。');
-                return;
-            }
-
-            const cost = lots * LOT_PRICE;
-            
-            if (cashAsset.value < cost) {
-                alert('現金餘額不足！');
-                return;
-            }
-
-            // Update asset
-            asset.costBasis += cost;
-            const newQuantity = cost / asset.currentPrice;
-            asset.quantity += newQuantity;
-            
-            // Update cash
-            cashAsset.value -= cost;
-            cashAsset.costBasis -= cost;
-
-            savePortfolio();
-            renderMainTable();
-            renderOtherAssetsTable();
-            updateAllCalculations();
-            closeAddLotModal();
-        }
-
-        function openOtherAssetModal(assetId = null) {
-            const modal = document.getElementById('other-asset-modal');
-            const title = document.getElementById('other-asset-modal-title');
-            const nameInput = document.getElementById('other-asset-name');
-            const valueInput = document.getElementById('other-asset-value');
-            const idInput = document.getElementById('other-asset-id');
-            const detailsDiv = document.getElementById('other-asset-details');
-            const rateInput = document.getElementById('other-asset-rate');
-            const maturityInput = document.getElementById('other-asset-maturity');
-
-            if (assetId) {
-                const asset = otherAssets.find(a => a.id === assetId);
-                title.textContent = '編輯資產';
-                nameInput.value = asset.name;
-                valueInput.value = asset.value;
-                idInput.value = asset.id;
-                if (asset.type === 'TermDeposit') {
-                    detailsDiv.classList.remove('hidden');
-                    rateInput.value = asset.rate || '';
-                    maturityInput.value = asset.maturityDate || '';
-                } else {
-                    detailsDiv.classList.add('hidden');
-                }
-            } else {
-                title.textContent = '新增資產';
-                nameInput.value = '';
-                valueInput.value = '';
-                idInput.value = '';
-                detailsDiv.classList.remove('hidden');
-                rateInput.value = '';
-                maturityInput.value = '';
-            }
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-        }
+        // --- Helper and UI functions (Unchanged) ---
+        function switchTab(tabName) { document.getElementById('view-portfolio').classList.toggle('hidden', tabName !== 'portfolio'); document.getElementById('view-other').classList.toggle('hidden', tabName !== 'other'); document.getElementById('tab-portfolio').classList.toggle('active', tabName === 'portfolio'); document.getElementById('tab-other').classList.toggle('active', tabName === 'other'); }
+        function handleSort(key) { if (currentSort.key === key) { currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc'; } else { currentSort.key = key; currentSort.order = 'asc'; } renderMainTable(); updateAllCalculations(); }
+        function renderPortfolioFooter(totalValue, totalCost) { const footer = document.getElementById('portfolio-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="px-4 py-3 text-right" colspan="2">投資組合總計</td><td class="px-4 py-3 text-right text-gray-400">${formatCurrency(totalCost)}</td><td class="px-4 py-3"></td><td class="px-4 py-3 text-right">${formatCurrency(totalValue)}</td><td class="px-4 py-3" colspan="3"></td></tr>`; }
+        function renderOtherAssetsFooter(total) { const footer = document.getElementById('other-assets-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="px-4 py-3 text-right" colspan="3">定存與現金總計</td><td class="px-4 py-3 text-right">${formatCurrency(total)}</td><td class="px-4 py-3"></td></tr>`;}
+        function openAddLotModal(assetId) { const modal = document.getElementById('add-lot-modal'); const asset = mainAssets.find(a => a.asset_id === assetId); document.getElementById('add-lot-modal-title').textContent = `新增購買: ${asset.short_name}`; document.getElementById('add-lot-asset-id').value = assetId; document.getElementById('add-lot-amount').value = ''; modal.classList.remove('hidden'); setTimeout(() => modal.classList.remove('opacity-0'), 10); }
+        function closeAddLotModal() { const modal = document.getElementById('add-lot-modal'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300); }
+        function openOtherAssetModal(assetId = null) { const modal = document.getElementById('other-asset-modal'); const title = document.getElementById('other-asset-modal-title'); const nameInput = document.getElementById('other-asset-name'); const valueInput = document.getElementById('other-asset-value'); const idInput = document.getElementById('other-asset-id'); const detailsDiv = document.getElementById('other-asset-details'); const rateInput = document.getElementById('other-asset-rate'); const maturityInput = document.getElementById('other-asset-maturity'); if (assetId) { const asset = otherAssets.find(a => a.id === assetId); title.textContent = '編輯資產'; nameInput.value = asset.name; valueInput.value = asset.value; idInput.value = asset.id; if (asset.type === 'TermDeposit') { detailsDiv.classList.remove('hidden'); rateInput.value = asset.rate || ''; maturityInput.value = asset.maturity_date || ''; } else { detailsDiv.classList.add('hidden'); } } else { title.textContent = '新增資產'; nameInput.value = ''; valueInput.value = ''; idInput.value = ''; detailsDiv.classList.remove('hidden'); rateInput.value = ''; maturityInput.value = ''; } modal.classList.remove('hidden'); setTimeout(() => modal.classList.remove('opacity-0'), 10); }
         function closeOtherAssetModal() { const modal = document.getElementById('other-asset-modal'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300); }
-        function saveOtherAsset() {
-            const id = document.getElementById('other-asset-id').value;
-            const name = document.getElementById('other-asset-name').value;
-            const value = parseFloat(document.getElementById('other-asset-value').value);
-            const rate = document.getElementById('other-asset-rate').value;
-            const maturity = document.getElementById('other-asset-maturity').value;
-
-            if (!name || isNaN(value)) { alert('請輸入有效的名稱和價值。'); return; }
-
-            const type = name.toLowerCase().includes('cash') ? 'Cash' : 'TermDeposit';
-
-            if (id) {
-                const asset = portfolio.find(a => a.id === id);
-                asset.name = name;
-                asset.value = value;
-                asset.costBasis = value;
-                asset.type = type;
-                if (type === 'TermDeposit') {
-                    asset.rate = rate;
-                    asset.maturityDate = maturity;
-                } else {
-                    asset.rate = null;
-                    asset.maturityDate = null;
-                }
-            } else {
-                const newAsset = { id: `other_${Date.now()}`, name, value, costBasis: value, type, rate: type === 'TermDeposit' ? rate : null, maturityDate: type === 'TermDeposit' ? maturity : null };
-                portfolio.push(newAsset);
-            }
-            otherAssets = portfolio.filter(a => a.type === 'TermDeposit' || a.type === 'Cash');
-            savePortfolio();
-            renderOtherAssetsTable();
-            updateAllCalculations();
-            closeOtherAssetModal();
-        }
-
-        function openConfirmModal(assetId, assetName) {
-            const modal = document.getElementById('confirm-modal');
-            document.getElementById('confirm-modal-text').textContent = `您確定要刪除「${assetName}」嗎？此操作無法復原。`;
-            document.getElementById('confirm-delete-btn').dataset.assetId = assetId;
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-        }
+        function openConfirmModal(assetId, assetName) { const modal = document.getElementById('confirm-modal'); document.getElementById('confirm-modal-text').textContent = `您確定要刪除「${assetName}」嗎？此操作無法復原。`; document.getElementById('confirm-delete-btn').dataset.assetId = assetId; modal.classList.remove('hidden'); setTimeout(() => modal.classList.remove('opacity-0'), 10); }
         function closeConfirmModal() { const modal = document.getElementById('confirm-modal'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300); }
-        function confirmDelete() {
-            const assetId = document.getElementById('confirm-delete-btn').dataset.assetId;
-            portfolio = portfolio.filter(a => a.id !== assetId);
-            otherAssets = portfolio.filter(a => a.id !== assetId);
-            savePortfolio();
-            renderOtherAssetsTable();
-            updateAllCalculations();
-            closeConfirmModal();
-        }
-
-        // --- Helper Functions ---
         function formatCurrency(value) { return (value || 0).toLocaleString('en-NZ', { style: 'currency', currency: 'NZD' }); }
         function formatNumber(value, digits = 2) { return (value || 0).toFixed(digits); }
-        function updatePlCell(elementId, value, isPercentage = false) {
-            const element = document.getElementById(elementId);
-            if (!element) return;
-            const numValue = value || 0;
-            const formattedValue = isPercentage ? `${formatNumber(numValue, 2)}%` : formatCurrency(numValue);
-            element.textContent = formattedValue;
-            
-            let classList = [];
-            if (elementId.startsWith('total-')) {
-                classList.push('text-3xl', 'font-bold', 'text-white', 'mt-2');
-            } else {
-                classList.push('px-4', 'py-4', 'whitespace-nowrap', 'text-right', 'font-medium');
-            }
+        function updatePlCell(elementId, value, isPercentage = false) { const element = document.getElementById(elementId); if (!element) return; const numValue = value || 0; const formattedValue = isPercentage ? `${formatNumber(numValue, 2)}%` : formatCurrency(numValue); element.textContent = formattedValue; let classList = []; if (elementId.startsWith('total-')) { classList.push('text-3xl', 'font-bold', 'text-white', 'mt-2'); } else { classList.push('px-4', 'py-4', 'whitespace-nowrap', 'text-right', 'font-medium'); } if (numValue > 0) { classList.push('text-green-400'); element.textContent = '+' + element.textContent; } else if (numValue < 0) { classList.push('text-red-400'); } else { if (elementId.startsWith('total-')) { classList.push('text-white'); } else { classList.push('text-gray-400'); } } element.className = classList.join(' '); }
 
-            if (numValue > 0) {
-                classList.push('text-green-400');
-                element.textContent = '+' + element.textContent;
-            } else if (numValue < 0) {
-                classList.push('text-red-400');
-            } else {
-                if (elementId.startsWith('total-')) {
-                    classList.push('text-white');
-                } else {
-                    classList.push('text-gray-400');
-                }
-            }
-            element.className = classList.join(' ');
-        }
     </script>
 </body>
 </html>
