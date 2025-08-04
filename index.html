@@ -79,24 +79,10 @@
         const FMP_API_KEY = "626Qz1OgD4IQ9ti8gb4CTJcqyz6DjAhT";
         
         // --- Supabase 連接設定 ---
-        //const SUPABASE_URL = 'https://vqaqiwfkwtgkbcccmhag.supabase.co';
-        //const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxYXFpd2Zrd3Rna2JjY2NtaGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MTYwNTYsImV4cCI6MjA2ODI5MjA1Nn0.swbrvzUL0VxumglJO0153qAK7A_VM-Gx6j6X7TZ51Do';
+        const SUPABASE_URL = 'https://vqaqiwfkwtgkbcccmhag.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxYXFpd2Zrd3Rna2JjY2NtaGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MTYwNTYsImV4cCI6MjA2ODI5MjA1Nn0.swbrvzUL0VxumglJO0153qAK7A_VM-Gx6j6X7TZ51Do';
 
-// Correctly initialise the Supabase client using environment variables.
-// The `import.meta.env` object exposes these variables during the build process.
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Check if the variables were loaded correctly.
-// This is a good practice for debugging.
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.error('Supabase environment variables are missing. Please check your Netlify settings and local .env file.');
-    // You could also display an error message to the user on the page.
-}
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// The rest of your Supabase functions and event listeners would follow here...
 
         
         
