@@ -76,16 +76,10 @@
         let otherAssets = [];
         let currentSort = { key: 'currentValue', order: 'desc' };
         const LOT_PRICE = 245;
-        const FMP_API_KEY = "626Qz1OgD4IQ9ti8gb4CTJcqyz6DjAhT";
         
         // --- Supabase 連接設定 ---
         const SUPABASE_URL = 'https://vqaqiwfkwtgkbcccmhag.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxYXFpd2Zrd3Rna2JjY2NtaGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MTYwNTYsImV4cCI6MjA2ODI5MjA1Nn0.swbrvzUL0VxumglJO0153qAK7A_VM-Gx6j6X7TZ51Do';
-
-
-
-        
-        
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -114,97 +108,91 @@
             }
             portfolio = data;
         }
-
-        // --- 核心功能 (Supabase 版本) ---
+        
+        async function fetchEtfPrices() {
+            const etfs = mainAssets.filter(a => a.type === 'ETF');
+            const tickers = etfs.map(etf => etf.ticker).join(',');
+            
+            // *** CHANGE: Call our own Netlify Function instead of FMP API directly ***
+            const url = `/.netlify/functions/getFmpData?tickers=${tickers}`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Netlify Function 請求失敗`);
+                const data = await response.json();
+                data.forEach(quote => {
+                    const asset = etfs.find(etf => etf.ticker.startsWith(quote.symbol));
+                    if (asset) asset.currentPrice = quote.price;
+                });
+            } catch (error) {
+                console.error("獲取 ETF 價格失敗:", error);
+            }
+            updateAllCalculations();
+            document.getElementById('last-updated').textContent = `最後更新: ${new Date().toLocaleString('zh-TW')}`;
+        }
+        
+        // --- 其他核心功能 (與前一版相同) ---
         async function saveNewTransaction() {
             const assetId = document.getElementById('add-lot-asset-id').value;
             const lots = parseFloat(document.getElementById('add-lot-amount').value);
-            
-            // *** FIX: Allow negative lots for selling, but not zero ***
             if (!assetId || isNaN(lots) || lots === 0) {
                 alert('請輸入有效的 Lot 數量 (非零)。'); return;
             }
-
             const asset = portfolio.find(a => a.asset_id === assetId);
             const cashAsset = portfolio.find(a => a.asset_id === 'cash');
-
             if (!asset || !cashAsset) { alert('找不到資產或現金項目。'); return; }
-
             const transactionValue = lots * LOT_PRICE;
             const quantityChange = transactionValue / (asset.currentPrice || asset.manual_price);
-
-            // *** FIX: Add checks for selling ***
-            if (lots < 0) { // Selling
+            if (lots < 0) {
                 if (asset.quantity < Math.abs(quantityChange)) {
                     alert(`賣出數量超過持有數量！\n您目前持有 ${asset.quantity.toFixed(2)} 單位，\n此次交易約 ${Math.abs(quantityChange).toFixed(2)} 單位。`);
                     return;
                 }
-            } else { // Buying
+            } else {
                 if (cashAsset.value < transactionValue) {
                     alert('現金餘額不足！'); return;
                 }
             }
-
-            // 準備更新數據
             const newCostBasis = asset.cost_basis + transactionValue;
             const newQuantity = asset.quantity + quantityChange;
             const newCashValue = cashAsset.value - transactionValue;
-
-            // 更新投資項目
-            const { error: assetError } = await db.from('assets')
-                .update({ cost_basis: newCostBasis, quantity: newQuantity })
-                .eq('asset_id', assetId);
-
-            // 更新現金
-            const { error: cashError } = await db.from('assets')
-                .update({ value: newCashValue, cost_basis: newCashValue })
-                .eq('asset_id', 'cash');
-
+            const { error: assetError } = await db.from('assets').update({ cost_basis: newCostBasis, quantity: newQuantity }).eq('asset_id', assetId);
+            const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
             if (assetError || cashError) {
                 alert('更新數據到雲端失敗，請稍後再試。');
                 console.error('Asset Error:', assetError, 'Cash Error:', cashError);
             } else {
-                await initialize(); // 重新從雲端載入所有數據以確保完全同步
+                await initialize();
                 closeAddLotModal();
             }
         }
-
         async function saveOtherAsset() {
-            const id = document.getElementById('other-asset-id').value; // This is the UUID
+            const id = document.getElementById('other-asset-id').value;
             const name = document.getElementById('other-asset-name').value;
             const value = parseFloat(document.getElementById('other-asset-value').value);
             const rate = document.getElementById('other-asset-rate').value;
             const maturity = document.getElementById('other-asset-maturity').value;
-
             if (!name || isNaN(value)) { alert('請輸入有效的名稱和價值。'); return; }
-
             const type = name.toLowerCase().includes('cash') ? 'Cash' : 'TermDeposit';
-            const assetData = {
-                name, value, cost_basis: value, type,
-                rate: type === 'TermDeposit' ? rate : null,
-                maturity_date: type === 'TermDeposit' ? maturity : null
-            };
-
+            const assetData = { name, value, cost_basis: value, type, rate: type === 'TermDeposit' ? rate : null, maturity_date: type === 'TermDeposit' ? maturity : null };
             let error;
-            if (id) { // 更新現有資產
+            if (id) {
                 const { error: updateError } = await db.from('assets').update(assetData).eq('id', id);
                 error = updateError;
-            } else { // 新增資產
-                assetData.asset_id = `other_${Date.now()}`; // Create a unique asset_id
+            } else {
+                assetData.asset_id = `other_${Date.now()}`;
                 assetData.short_name = name;
                 const { error: insertError } = await db.from('assets').insert([assetData]);
                 error = insertError;
             }
-
             if (error) {
                 alert('儲存數據到雲端失敗，請稍後再試。');
                 console.error('Save Other Asset Error:', error);
             } else {
-                await initialize(); // 重新從雲端載入所有數據以確保同步
+                await initialize();
                 closeOtherAssetModal();
             }
         }
-
         async function confirmDelete() {
             const id = document.getElementById('confirm-delete-btn').dataset.assetId;
             const { error } = await db.from('assets').delete().eq('id', id);
@@ -239,7 +227,6 @@
                 tbody.appendChild(row);
             });
         }
-        
         function renderOtherAssetsTable() {
             const tbody = document.getElementById('other-assets-body');
             tbody.innerHTML = '';
@@ -250,26 +237,6 @@
                 tbody.appendChild(row);
             });
         }
-        
-        async function fetchEtfPrices() {
-            const etfs = mainAssets.filter(a => a.type === 'ETF');
-            const tickers = etfs.map(etf => etf.ticker).join(',');
-            const url = `https://financialmodelingprep.com/api/v3/quote/${tickers}?apikey=${FMP_API_KEY}`;
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`API 請求失敗`);
-                const data = await response.json();
-                data.forEach(quote => {
-                    const asset = etfs.find(etf => etf.ticker.startsWith(quote.symbol));
-                    if (asset) asset.currentPrice = quote.price;
-                });
-            } catch (error) {
-                console.error("獲取 ETF 價格失敗:", error);
-            }
-            updateAllCalculations();
-            document.getElementById('last-updated').textContent = `最後更新: ${new Date().toLocaleString('zh-TW')}`;
-        }
-
         async function handleManualUpdate(assetId, newPrice) {
             const { error } = await db.from('assets').update({ manual_price: newPrice }).eq('asset_id', assetId);
             if (error) {
@@ -280,7 +247,6 @@
                 updateAllCalculations();
             }
         }
-
         function updateAllCalculations() {
             let totalValue = 0, totalCost = 0, mainAssetsTotalValue = 0, mainAssetsTotalCost = 0, otherAssetsTotalValue = 0;
             portfolio.forEach(asset => {
