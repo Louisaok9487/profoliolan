@@ -25,9 +25,42 @@
         .sort-icon { display: inline-block; margin-left: 8px; opacity: 0.5; transition: opacity 0.2s; }
         .sortable:hover .sort-icon { opacity: 1; }
         .modal-backdrop { transition: opacity 0.3s ease; }
-        /* Style for the new price tracker tab */
+        
+        .sticky-col {
+            position: -webkit-sticky; /* For Safari */
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+        .sticky-header {
+            position: -webkit-sticky; /* For Safari */
+            position: sticky;
+            left: 0;
+            z-index: 20; /* Higher z-index for header */
+        }
         .price-tracker-table th { cursor: pointer; user-select: none; }
         .price-tracker-table th:hover { background-color: #374151; }
+        /* *** NEW: Badge Styles *** */
+        .badge {
+            display: inline-block;
+            padding: 0.2em 0.6em;
+            font-size: 0.75em;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.375rem;
+            margin-left: 8px;
+        }
+        .badge-red {
+            color: #fff;
+            background-color: #991b1b; /* red-800 */
+        }
+        .badge-blue {
+            color: #fff;
+            background-color: #1e40af; /* blue-800 */
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -50,18 +83,17 @@
         <div class="mb-6"><div class="flex border-b border-gray-700">
             <button id="tab-portfolio" class="tab-button active" onclick="switchTab('portfolio')">投資組合</button>
             <button id="tab-other" class="tab-button" onclick="switchTab('other')">定存與現金</button>
-            <!-- *** NEW: Price Tracker Tab Button *** -->
             <button id="tab-tracker" class="tab-button" onclick="switchTab('tracker')">現價追蹤</button>
         </div></div>
 
         <!-- 內容區域 -->
         <div id="view-portfolio">
-            <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
+            <div class="bg-gray-800 rounded-xl shadow-lg p-2 sm:p-4 md:p-6">
                 <div class="flex justify-end mb-4">
                     <button onclick="openNewAssetModal()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">新增投資項目</button>
                 </div>
                 <div id="loading-spinner" class="text-center py-8"><svg class="animate-spin h-8 w-8 text-blue-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="mt-4 text-gray-400">正在從 Supabase 讀取數據...</p></div>
-                <div id="portfolio-table-container" class="table-container hidden"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('short_name')">名稱</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('quantity')">數量</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('cost_basis')">總成本</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentPrice')">目前價格</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentValue')">目前價值</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('pl')">損益 ($)</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('return')">報酬率 (%)</th><th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="portfolio-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="portfolio-footer"></tfoot></table></div>
+                <div id="portfolio-table-container" class="table-container hidden"><table class="min-w-full divide-y divide-gray-700 text-sm"><thead class="bg-gray-800"><tr><th class="sticky-header bg-gray-800 px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('short_name')">名稱</th><th class="px-2 sm:px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('quantity')">數量</th><th class="px-2 sm:px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('cost_basis')">總成本</th><th class="px-2 sm:px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentPrice')">目前價格</th><th class="px-2 sm:px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('currentValue')">目前價值</th><th class="px-2 sm:px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('pl')">損益 ($)</th><th class="px-2 sm:px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider sortable" onclick="handleSort('return')">報酬率 (%)</th><th class="px-2 sm:px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="portfolio-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="portfolio-footer"></tfoot></table></div>
             </div>
         </div>
 
@@ -72,7 +104,6 @@
             </div>
         </div>
 
-        <!-- *** NEW: Price Tracker View *** -->
         <div id="view-tracker" class="hidden">
             <div id="tracker-loading" class="text-center text-gray-400">
                 <svg class="animate-spin h-8 w-8 text-blue-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -325,7 +356,15 @@
                 row.id = `row-${asset.asset_id}`;
                 row.className = 'hover:bg-gray-700/50 transition-colors duration-200';
                 let priceCellContent = asset.type === 'ETF' ? `<span id="price-${asset.asset_id}">...</span>` : `<input type="number" step="0.0001" value="${asset.manual_price}" onchange="handleManualUpdate('${asset.asset_id}', this.value)" class="price-input text-white">`;
-                row.innerHTML = `<td class="px-4 py-4 whitespace-nowrap"><div class="font-medium text-white" title="${asset.name}">${asset.short_name}</div><div class="text-sm text-gray-400">${asset.type}</div></td><td class="px-4 py-4 whitespace-nowrap text-right">${formatNumber(asset.quantity, 2)}</td><td class="px-4 py-4 whitespace-nowrap text-right text-gray-400">${formatCurrency(asset.cost_basis)}</td><td class="px-4 py-4 whitespace-nowrap text-right">${priceCellContent}</td><td id="value-${asset.asset_id}" class="px-4 py-4 whitespace-nowrap text-right font-semibold">...</td><td id="pl-${asset.asset_id}" class="px-4 py-4 whitespace-nowrap text-right">...</td><td id="return-${asset.asset_id}" class="px-4 py-4 whitespace-nowrap text-right font-medium">...</td><td class="px-4 py-4 whitespace-nowrap text-center"><button onclick="openAddLotModal('${asset.asset_id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-sm">新增交易</button></td>`;
+                row.innerHTML = `
+                    <td class="sticky-col bg-gray-800 px-2 sm:px-4 py-3 whitespace-nowrap"><div class="font-medium text-white" title="${asset.name}">${asset.short_name}</div><div class="text-xs text-gray-400">${asset.type}</div></td>
+                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right">${formatNumber(asset.quantity, 2)}</td>
+                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right text-gray-400">${formatCurrency(asset.cost_basis)}</td>
+                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right">${priceCellContent}</td>
+                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right font-semibold" id="value-${asset.asset_id}">...</td>
+                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right" id="pl-${asset.asset_id}">...</td>
+                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right font-medium" id="return-${asset.asset_id}">...</td>
+                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-center"><button onclick="openAddLotModal('${asset.asset_id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-sm">新增交易</button></td>`;
                 tbody.appendChild(row);
             });
         }
@@ -391,7 +430,7 @@
 
         // --- Helper and UI functions (Unchanged) ---
         function handleSort(key) { if (currentSort.key === key) { currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc'; } else { currentSort.key = key; currentSort.order = 'asc'; } renderMainTable(); updateAllCalculations(); }
-        function renderPortfolioFooter(totalValue, totalCost) { const footer = document.getElementById('portfolio-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="px-4 py-3 text-right" colspan="2">投資組合總計</td><td class="px-4 py-3 text-right text-gray-400">${formatCurrency(totalCost)}</td><td class="px-4 py-3"></td><td class="px-4 py-3 text-right">${formatCurrency(totalValue)}</td><td class="px-4 py-3" colspan="3"></td></tr>`; }
+        function renderPortfolioFooter(totalValue, totalCost) { const footer = document.getElementById('portfolio-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="sticky-col bg-gray-700/50 px-2 sm:px-4 py-3 text-right" colspan="2">投資組合總計</td><td class="px-2 sm:px-4 py-3 text-right text-gray-400">${formatCurrency(totalCost)}</td><td class="px-2 sm:px-4 py-3"></td><td class="px-2 sm:px-4 py-3 text-right">${formatCurrency(totalValue)}</td><td class="px-2 sm:px-4 py-3" colspan="3"></td></tr>`; }
         function renderOtherAssetsFooter(total) { const footer = document.getElementById('other-assets-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="px-4 py-3 text-right" colspan="3">定存與現金總計</td><td class="px-4 py-3 text-right">${formatCurrency(total)}</td><td class="px-4 py-3"></td></tr>`;}
         function openAddLotModal(assetId) { const modal = document.getElementById('add-lot-modal'); const asset = mainAssets.find(a => a.asset_id === assetId); document.getElementById('add-lot-modal-title').textContent = `新增交易: ${asset.short_name}`; document.getElementById('add-lot-asset-id').value = assetId; document.getElementById('add-lot-amount').value = ''; modal.classList.remove('hidden'); setTimeout(() => modal.classList.remove('opacity-0'), 10); }
         function closeAddLotModal() { const modal = document.getElementById('add-lot-modal'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300); }
@@ -403,7 +442,7 @@
         function closeNewAssetModal() { const modal = document.getElementById('new-asset-modal'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300); }
         function formatCurrency(value) { return (value || 0).toLocaleString('en-NZ', { style: 'currency', currency: 'NZD' }); }
         function formatNumber(value, digits = 2) { return (value || 0).toFixed(digits); }
-        function updatePlCell(elementId, value, isPercentage = false) { const element = document.getElementById(elementId); if (!element) return; const numValue = value || 0; const formattedValue = isPercentage ? `${formatNumber(numValue, 2)}%` : formatCurrency(numValue); element.textContent = formattedValue; let classList = []; if (elementId.startsWith('total-')) { classList.push('text-3xl', 'font-bold', 'text-white', 'mt-2'); } else { classList.push('px-4', 'py-4', 'whitespace-nowrap', 'text-right', 'font-medium'); } if (numValue > 0) { classList.push('text-green-400'); element.textContent = '+' + element.textContent; } else if (numValue < 0) { classList.push('text-red-400'); } else { if (elementId.startsWith('total-')) { classList.push('text-white'); } else { classList.push('text-gray-400'); } } element.className = classList.join(' '); }
+        function updatePlCell(elementId, value, isPercentage = false) { const element = document.getElementById(elementId); if (!element) return; const numValue = value || 0; const formattedValue = isPercentage ? `${formatNumber(numValue, 2)}%` : formatCurrency(numValue); element.textContent = formattedValue; let classList = []; if (elementId.startsWith('total-')) { classList.push('text-3xl', 'font-bold', 'text-white', 'mt-2'); } else { classList.push('px-2 sm:px-4', 'py-3', 'whitespace-nowrap', 'text-right', 'font-medium'); } if (numValue > 0) { classList.push('text-green-400'); element.textContent = '+' + element.textContent; } else if (numValue < 0) { classList.push('text-red-400'); } else { if (elementId.startsWith('total-')) { classList.push('text-white'); } else { classList.push('text-gray-400'); } } element.className = classList.join(' '); }
         
         // --- Price Tracker Specific Logic ---
         let trackerInitialized = false;
@@ -429,6 +468,8 @@
 
         function loadTradingViewWidgets() {
             const createWidget = (containerId, symbol) => {
+                const container = document.getElementById(containerId);
+                if (container.firstChild) return; // Avoid re-creating widget
                 const script = document.createElement('script');
                 script.type = 'text/javascript';
                 script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js';
@@ -437,7 +478,7 @@
                     "interval": "1D", "width": "100%", "isTransparent": true, "height": "450",
                     "symbol": symbol, "showIntervalTabs": true, "locale": "zh_TW", "colorTheme": "dark"
                 });
-                document.getElementById(containerId).appendChild(script);
+                container.appendChild(script);
             };
             createWidget('tv-spx', 'SP:SPX');
             createWidget('tv-btc', 'BITSTAMP:BTCUSD');
@@ -478,6 +519,9 @@
         function displayTrackerData(data) {
             const indicesList = ["BTC USD", "Gold (XAU/USD)", "Silver (XAG/USD)", "S&P 500 Index", "NASDAQ Composite", "VIX (Volatility Index)"];
             const etfList = ["USV", "USM", "USA", "USG", "TWF", "USF", "VT", "VOO", "VTI"];
+            const redHighlight = ["VT", "VOO", "VTI"];
+            const blueHighlight = ["USV", "USM", "USA", "USG", "TWF", "USF"];
+
             const indicesBody = document.getElementById('indices-body');
             const etfBody = document.getElementById('etf-body');
             indicesBody.innerHTML = ''; etfBody.innerHTML = '';
@@ -497,7 +541,16 @@
                     }
                 }
                 if (isNaN(price)) return;
-                const rowHtml = `<tr class="hover:bg-gray-700/50"><td class="p-4 font-medium">${name}</td><td class="p-4 text-right">${price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-4 text-right font-medium ${changeColor}">${changeText}</td></tr>`;
+                
+                // *** MODIFIED: Use badge for highlighting ***
+                let nameHtml = name;
+                if (redHighlight.includes(name)) {
+                    nameHtml += `<span class="badge badge-red">核心</span>`;
+                } else if (blueHighlight.includes(name)) {
+                    nameHtml += `<span class="badge badge-blue">持股</span>`;
+                }
+
+                const rowHtml = `<tr class="hover:bg-gray-700/50"><td class="p-4 font-medium flex items-center">${nameHtml}</td><td class="p-4 text-right">${price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-4 text-right font-medium ${changeColor}">${changeText}</td></tr>`;
                 if (indicesList.includes(name)) {
                     indicesBody.innerHTML += rowHtml;
                 } else if (etfList.includes(name)) {
