@@ -1,0 +1,6 @@
+# Netlify 網站設定檔
+# 這個檔案告訴 Netlify 去哪裡找您的雲端函式
+
+[functions]
+  # 指定雲端函式所在的資料夾
+  directory = "netlify/functions"
