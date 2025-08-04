@@ -40,7 +40,6 @@
         }
         .price-tracker-table th { cursor: pointer; user-select: none; }
         .price-tracker-table th:hover { background-color: #374151; }
-        /* *** NEW: Badge Styles *** */
         .badge {
             display: inline-block;
             padding: 0.2em 0.6em;
@@ -144,6 +143,7 @@
     <script type="module">
         // --- 全局變數 ---
         let portfolio = [];
+        let transactions = [];
         let mainAssets = [];
         let otherAssets = [];
         let currentSort = { key: 'currentValue', order: 'desc' };
@@ -159,10 +159,23 @@
         document.addEventListener('DOMContentLoaded', initialize);
 
         async function initialize() {
-            await loadPortfolioFromSupabase();
+            const [assetsResult, transactionsResult] = await Promise.all([
+                db.from('assets').select('*'),
+                fetchMonthlyTransactions()
+            ]);
+
+            if (assetsResult.error) {
+                console.error('從 Supabase 讀取數據失敗:', assetsResult.error);
+                alert('無法從雲端資料庫讀取您的投資組合。');
+                return;
+            }
+            portfolio = assetsResult.data;
+            transactions = transactionsResult;
+
             mainAssets = portfolio.filter(a => a.type === 'ETF' || a.type === 'Fund');
             otherAssets = portfolio.filter(a => a.type === 'TermDeposit' || a.type === 'Cash');
             
+            sortMainAssets(); // Sort on initial load
             renderMainTable();
             renderOtherAssetsTable();
 
@@ -171,14 +184,19 @@
             document.getElementById('portfolio-table-container').style.display = 'block';
         }
         
-        async function loadPortfolioFromSupabase() {
-            const { data, error } = await db.from('assets').select('*');
+        async function fetchMonthlyTransactions() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+            
+            const { data, error } = await db.from('transactions')
+                .select('asset_id, lots')
+                .gte('created_at', firstDay);
+
             if (error) {
-                console.error('從 Supabase 讀取數據失敗:', error);
-                alert('無法從雲端資料庫讀取您的投資組合，請檢查網路連線或 Supabase 設定。');
-                return;
+                console.error('讀取交易紀錄失敗:', error);
+                return [];
             }
-            portfolio = data;
+            return data;
         }
         
         async function fetchEtfPrices() {
@@ -217,29 +235,48 @@
             const asset = portfolio.find(a => a.asset_id === assetId);
             const cashAsset = portfolio.find(a => a.asset_id === 'cash');
             if (!asset || !cashAsset) { alert('找不到資產或現金項目。'); return; }
+            
             const transactionValue = lots * LOT_PRICE;
             const currentPrice = asset.currentPrice || asset.manual_price || asset.initial_price;
             if (!currentPrice) { alert('無法獲取目前價格，請稍後再試。'); return; }
+            
             const quantityChange = transactionValue / currentPrice;
-            if (lots < 0) {
-                if (asset.quantity < Math.abs(quantityChange)) {
-                    alert(`賣出數量超過持有數量！\n您目前持有 ${asset.quantity.toFixed(2)} 單位，\n此次交易約 ${Math.abs(quantityChange).toFixed(2)} 單位。`);
-                    return;
-                }
-            } else {
-                if (cashAsset.value < transactionValue) {
-                    alert('現金餘額不足！'); return;
-                }
+            if (lots < 0 && asset.quantity < Math.abs(quantityChange)) {
+                alert(`賣出數量超過持有數量！`); return;
             }
+            if (lots > 0 && cashAsset.value < transactionValue) {
+                alert('現金餘額不足！'); return;
+            }
+
+            const { error: logError } = await db.from('transactions').insert([
+                { asset_id: assetId, lots: lots, transaction_value: transactionValue }
+            ]);
+
+            if (logError) {
+                alert('寫入交易日誌失敗，操作已取消。');
+                return;
+            }
+
             const newCostBasis = asset.cost_basis + transactionValue;
             const newQuantity = asset.quantity + quantityChange;
             const newCashValue = cashAsset.value - transactionValue;
+            
             const { error: assetError } = await db.from('assets').update({ cost_basis: newCostBasis, quantity: newQuantity }).eq('asset_id', assetId);
             const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
+
             if (assetError || cashError) {
-                alert('更新數據到雲端失敗，請稍後再試。');
+                alert('更新資產總額失敗，但交易日誌已記錄。請手動校正。');
             } else {
-                await initialize();
+                // *** MODIFIED: Local update instead of full re-initialization ***
+                asset.cost_basis = newCostBasis;
+                asset.quantity = newQuantity;
+                cashAsset.value = newCashValue;
+                cashAsset.cost_basis = newCashValue;
+                transactions.push({ asset_id: assetId, lots: lots });
+
+                renderMainTable(); // Re-render without sorting
+                renderOtherAssetsTable();
+                updateAllCalculations();
                 closeAddLotModal();
             }
         }
@@ -284,16 +321,17 @@
             }
 
             const quantity = cost_basis / currentPrice;
+            const asset_id = short_name.toLowerCase().replace(/\s/g, '_');
             const newAssetData = {
-                asset_id: short_name.toLowerCase().replace(/\s/g, '_'),
-                name, short_name, ticker, type, quantity, cost_basis,
+                asset_id, name, short_name, ticker, type, quantity, cost_basis,
                 manual_price: type === 'Fund' ? currentPrice : null,
                 initial_price: type === 'ETF' ? currentPrice : null
             };
             const newCashValue = cashAsset.value - cost_basis;
             const { error: insertError } = await db.from('assets').insert([newAssetData]);
+            const { error: logError } = await db.from('transactions').insert([{ asset_id, lots, transaction_value: cost_basis }]);
             const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
-            if (insertError || cashError) {
+            if (insertError || cashError || logError) {
                 alert('新增資產到雲端失敗。');
             } else {
                 await initialize();
@@ -339,9 +377,8 @@
         }
         
         // --- 渲染與計算 (與之前版本類似) ---
-        function renderMainTable() {
-            const tbody = document.getElementById('portfolio-body');
-            tbody.innerHTML = '';
+        // *** NEW: Sorting logic is now in its own function ***
+        function sortMainAssets() {
             mainAssets.sort((a, b) => {
                 const key = currentSort.key;
                 let valA = a[key] || (key === 'short_name' ? '' : 0);
@@ -351,11 +388,25 @@
                 if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
                 return 0;
             });
+        }
+
+        function renderMainTable() {
+            const tbody = document.getElementById('portfolio-body');
+            tbody.innerHTML = '';
             mainAssets.forEach(asset => {
                 const row = document.createElement('tr');
                 row.id = `row-${asset.asset_id}`;
                 row.className = 'hover:bg-gray-700/50 transition-colors duration-200';
                 let priceCellContent = asset.type === 'ETF' ? `<span id="price-${asset.asset_id}">...</span>` : `<input type="number" step="0.0001" value="${asset.manual_price}" onchange="handleManualUpdate('${asset.asset_id}', this.value)" class="price-input text-white">`;
+                
+                const monthlyLots = transactions.filter(t => t.asset_id === asset.asset_id).reduce((sum, t) => sum + t.lots, 0);
+                let monthlyLotsDisplay = '';
+                if (monthlyLots !== 0) {
+                    const sign = monthlyLots > 0 ? '+' : '';
+                    const color = monthlyLots > 0 ? 'text-green-400' : 'text-red-400';
+                    monthlyLotsDisplay = `<span class="text-xs ${color}">本月: ${sign}${monthlyLots} lots</span>`;
+                }
+
                 row.innerHTML = `
                     <td class="sticky-col bg-gray-800 px-2 sm:px-4 py-3 whitespace-nowrap"><div class="font-medium text-white" title="${asset.name}">${asset.short_name}</div><div class="text-xs text-gray-400">${asset.type}</div></td>
                     <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right">${formatNumber(asset.quantity, 2)}</td>
@@ -364,7 +415,14 @@
                     <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right font-semibold" id="value-${asset.asset_id}">...</td>
                     <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right" id="pl-${asset.asset_id}">...</td>
                     <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right font-medium" id="return-${asset.asset_id}">...</td>
-                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-center"><button onclick="openAddLotModal('${asset.asset_id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-sm">新增交易</button></td>`;
+                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-center">
+                        <div class="flex flex-col items-center space-y-1">
+                            <button onclick="openAddLotModal('${asset.asset_id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-sm w-full">新增交易</button>
+                            <div class="text-xs text-gray-500 h-4" id="monthly-lots-${asset.asset_id}">
+                                ${monthlyLotsDisplay}
+                            </div>
+                        </div>
+                    </td>`;
                 tbody.appendChild(row);
             });
         }
@@ -429,7 +487,7 @@
         window.saveNewAsset = saveNewAsset;
 
         // --- Helper and UI functions (Unchanged) ---
-        function handleSort(key) { if (currentSort.key === key) { currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc'; } else { currentSort.key = key; currentSort.order = 'asc'; } renderMainTable(); updateAllCalculations(); }
+        function handleSort(key) { if (currentSort.key === key) { currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc'; } else { currentSort.key = key; currentSort.order = 'asc'; } sortMainAssets(); renderMainTable(); }
         function renderPortfolioFooter(totalValue, totalCost) { const footer = document.getElementById('portfolio-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="sticky-col bg-gray-700/50 px-2 sm:px-4 py-3 text-right" colspan="2">投資組合總計</td><td class="px-2 sm:px-4 py-3 text-right text-gray-400">${formatCurrency(totalCost)}</td><td class="px-2 sm:px-4 py-3"></td><td class="px-2 sm:px-4 py-3 text-right">${formatCurrency(totalValue)}</td><td class="px-2 sm:px-4 py-3" colspan="3"></td></tr>`; }
         function renderOtherAssetsFooter(total) { const footer = document.getElementById('other-assets-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="px-4 py-3 text-right" colspan="3">定存與現金總計</td><td class="px-4 py-3 text-right">${formatCurrency(total)}</td><td class="px-4 py-3"></td></tr>`;}
         function openAddLotModal(assetId) { const modal = document.getElementById('add-lot-modal'); const asset = mainAssets.find(a => a.asset_id === assetId); document.getElementById('add-lot-modal-title').textContent = `新增交易: ${asset.short_name}`; document.getElementById('add-lot-asset-id').value = assetId; document.getElementById('add-lot-amount').value = ''; modal.classList.remove('hidden'); setTimeout(() => modal.classList.remove('opacity-0'), 10); }
@@ -542,7 +600,6 @@
                 }
                 if (isNaN(price)) return;
                 
-                // *** MODIFIED: Use badge for highlighting ***
                 let nameHtml = name;
                 if (redHighlight.includes(name)) {
                     nameHtml += `<span class="badge badge-red">核心</span>`;
