@@ -248,14 +248,13 @@
             const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
             if (assetError || cashError) { alert('更新資產總額失敗，但交易日誌已記錄。請手動校正。'); } 
             else { 
-                // *** FIX: Local update instead of full re-initialization ***
                 asset.cost_basis = newCostBasis;
                 asset.quantity = newQuantity;
                 cashAsset.value = newCashValue;
                 cashAsset.cost_basis = newCashValue;
                 transactions.push({ asset_id: assetId, lots: lots });
 
-                renderMainTable(); // Re-render without sorting
+                renderMainTable();
                 renderOtherAssetsTable();
                 updateAllCalculations();
                 closeAddLotModal();
@@ -564,6 +563,16 @@
             const bitcoin = ["BTC USD"];
             const preciousMetals = ["Gold (XAU/USD)", "Silver (XAG/USD)"];
             const marketIndices = ["S&P 500 Index", "NASDAQ Composite", "VIX (Volatility Index)"];
+            
+            // *** NEW: Name mapping for shorter display names ***
+            const nameMap = {
+                "BTC USD": "BTC (USD)",
+                "Gold (XAU/USD)": "Gold",
+                "Silver (XAG/USD)": "Silver",
+                "S&P 500 Index": "S&P 500",
+                "NASDAQ Composite": "NASDAQ",
+                "VIX (Volatility Index)": "VIX"
+            };
 
             const indicesBody = document.getElementById('indices-body');
             const etfBody = document.getElementById('etf-body');
@@ -585,7 +594,10 @@
                 }
                 if (isNaN(price)) return;
                 
-                let nameHtml = name;
+                // *** MODIFIED: Use the mapped name for display ***
+                const displayName = nameMap[name] || name;
+                let nameHtml = displayName;
+
                 if (redHighlight.includes(name)) { nameHtml += `<span class="badge badge-red">核心</span>`; } 
                 else if (blueHighlight.includes(name)) { nameHtml += `<span class="badge badge-blue">持股</span>`; }
                 else if (bitcoin.includes(name)) { nameHtml += `<span class="badge badge-amber">比特幣</span>`; }
