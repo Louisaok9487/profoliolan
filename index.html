@@ -79,10 +79,11 @@
         </div>
 
         <!-- 分頁 -->
-        <div class="mb-6"><div class="flex border-b border-gray-700">
-            <button id="tab-portfolio" class="tab-button active" onclick="switchTab('portfolio')">投資組合</button>
-            <button id="tab-other" class="tab-button" onclick="switchTab('other')">定存與現金</button>
-            <button id="tab-tracker" class="tab-button" onclick="switchTab('tracker')">現價追蹤</button>
+        <div class="mb-6"><div class="flex border-b border-gray-700 overflow-x-auto">
+            <button id="tab-portfolio" class="tab-button active flex-shrink-0" onclick="switchTab('portfolio')">投資組合</button>
+            <button id="tab-other" class="tab-button flex-shrink-0" onclick="switchTab('other')">定存與現金</button>
+            <button id="tab-cashflow" class="tab-button flex-shrink-0" onclick="switchTab('cashflow')">資金流水</button>
+            <button id="tab-tracker" class="tab-button flex-shrink-0" onclick="switchTab('tracker')">現價追蹤</button>
         </div></div>
 
         <!-- 內容區域 -->
@@ -100,6 +101,16 @@
             <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
                 <div class="flex justify-end mb-4"><button onclick="openOtherAssetModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">新增資產</button></div>
                 <div class="table-container"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">名稱</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">利率</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">到期日</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">價值</th><th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th></tr></thead><tbody id="other-assets-body" class="bg-gray-800 divide-y divide-gray-700"></tbody><tfoot id="other-assets-footer"></tfoot></table></div>
+            </div>
+        </div>
+        
+        <div id="view-cashflow" class="hidden">
+            <div class="bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
+                <div class="flex justify-end mb-4 space-x-4">
+                    <button onclick="openCashModal('deposit')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">存入資金</button>
+                    <button onclick="openCashModal('withdraw')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">取出資金</button>
+                </div>
+                <div class="table-container"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-800"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">日期</th><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">類型</th><th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">備註</th><th class="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">金額</th></tr></thead><tbody id="cashflow-body" class="bg-gray-800 divide-y divide-gray-700"></tbody></table></div>
             </div>
         </div>
 
@@ -139,15 +150,16 @@
     <div id="other-asset-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-1/3"><h3 class="text-lg font-bold text-white mb-4" id="other-asset-modal-title">新增/編輯資產</h3><div><label for="other-asset-name" class="block text-sm font-medium text-gray-300">資產名稱</label><input type="text" id="other-asset-name" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div class="mt-4"><label for="other-asset-value" class="block text-sm font-medium text-gray-300">價值 (NZD)</label><input type="number" id="other-asset-value" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div id="other-asset-details" class="mt-4 space-y-4"><hr class="border-gray-600"><div><label for="other-asset-rate" class="block text-sm font-medium text-gray-300">利率 (可選)</label><input type="text" id="other-asset-rate" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white" placeholder="例如: 5.10%"></div><div><label for="other-asset-maturity" class="block text-sm font-medium text-gray-300">到期日 (可選)</label><input type="text" id="other-asset-maturity" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white" placeholder="例如: 12 Aug 2025"></div></div><input type="hidden" id="other-asset-id"><div class="flex justify-end space-x-4 mt-6"><button onclick="closeOtherAssetModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button onclick="saveOtherAsset()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md">儲存</button></div></div></div>
     <div id="confirm-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-auto"><h3 class="text-lg font-bold text-white">確認刪除</h3><p class="text-gray-300 my-4" id="confirm-modal-text">您確定要刪除此項資產嗎？此操作無法復原。</p><div class="flex justify-end space-x-4"><button onclick="closeConfirmModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button id="confirm-delete-btn" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md">確認刪除</button></div></div></div>
     <div id="new-asset-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-1/3"><h3 class="text-lg font-bold text-white mb-4">新增投資項目</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-300">全名</label><input type="text" id="new-asset-name" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white" placeholder="例如: Smartshares Global Bond ETF"></div><div><label class="block text-sm font-medium text-gray-300">簡稱</label><input type="text" id="new-asset-short-name" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white" placeholder="例如: GBD"></div><div><label class="block text-sm font-medium text-gray-300">Ticker (用於 API)</label><input type="text" id="new-asset-ticker" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white" placeholder="例如: GBD.NZ (基金可留空)"></div><div><label class="block text-sm font-medium text-gray-300">類型</label><select id="new-asset-type" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white"><option>ETF</option><option>Fund</option></select></div><div><label class="block text-sm font-medium text-gray-300">首次購買 Lot 數量</label><input type="number" id="new-asset-lots" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white" placeholder="例如: 10"></div></div><div class="flex justify-end space-x-4 mt-6"><button onclick="closeNewAssetModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button onclick="saveNewAsset()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md">儲存</button></div></div></div>
+    <div id="cash-flow-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0"><div class="bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 md:w-1/3"><h3 class="text-lg font-bold text-white mb-4" id="cash-flow-modal-title">紀錄資金流動</h3><div class="space-y-4"><div><label for="cash-flow-amount" class="block text-sm font-medium text-gray-300">金額 (NZD)</label><input type="number" id="cash-flow-amount" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white"></div><div><label for="cash-flow-desc" class="block text-sm font-medium text-gray-300">備註 (可選)</label><input type="text" id="cash-flow-desc" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm py-2 px-3 text-white" placeholder="例如: 年初投入資金"></div></div><input type="hidden" id="cash-flow-type"><div class="flex justify-end space-x-4 mt-6"><button onclick="closeCashModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">取消</button><button onclick="saveCashMovement()" id="save-cash-flow-btn" class="px-4 py-2 rounded-md">儲存</button></div></div></div>
 
     <script type="module">
         // --- 全局變數 ---
         let portfolio = [];
         let transactions = [];
+        let cashMovements = [];
         let mainAssets = [];
         let otherAssets = [];
         let currentSort = { key: 'currentValue', order: 'desc' };
-        // *** FIX: Updated LOT_PRICE to 250 ***
         const LOT_PRICE = 250;
         
         // --- Supabase 連接設定 ---
@@ -160,18 +172,20 @@
         document.addEventListener('DOMContentLoaded', initialize);
 
         async function initialize() {
-            const [assetsResult, transactionsResult] = await Promise.all([
+            const [assetsResult, transactionsResult, cashMovementsResult] = await Promise.all([
                 db.from('assets').select('*'),
-                fetchMonthlyTransactions()
+                fetchMonthlyTransactions(),
+                db.from('cash_movements').select('*').order('created_at', { ascending: false })
             ]);
 
-            if (assetsResult.error) {
-                console.error('從 Supabase 讀取數據失敗:', assetsResult.error);
+            if (assetsResult.error || cashMovementsResult.error) {
+                console.error('從 Supabase 讀取數據失敗:', assetsResult.error, cashMovementsResult.error);
                 alert('無法從雲端資料庫讀取您的投資組合。');
                 return;
             }
             portfolio = assetsResult.data;
             transactions = transactionsResult;
+            cashMovements = cashMovementsResult.data;
 
             mainAssets = portfolio.filter(a => a.type === 'ETF' || a.type === 'Fund');
             otherAssets = portfolio.filter(a => a.type === 'TermDeposit' || a.type === 'Cash');
@@ -179,6 +193,7 @@
             sortMainAssets();
             renderMainTable();
             renderOtherAssetsTable();
+            renderCashFlowTable();
 
             await fetchEtfPrices();
             document.getElementById('loading-spinner').style.display = 'none';
@@ -188,29 +203,16 @@
         async function fetchMonthlyTransactions() {
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
-            
-            const { data, error } = await db.from('transactions')
-                .select('asset_id, lots')
-                .gte('created_at', firstDay);
-
-            if (error) {
-                console.error('讀取交易紀錄失敗:', error);
-                return [];
-            }
+            const { data, error } = await db.from('transactions').select('asset_id, lots').gte('created_at', firstDay);
+            if (error) { console.error('讀取交易紀錄失敗:', error); return []; }
             return data;
         }
         
         async function fetchEtfPrices() {
             const etfs = mainAssets.filter(a => a.type === 'ETF');
             const tickers = etfs.map(etf => etf.ticker).join(',');
-            
-            if (!tickers) { 
-                updateAllCalculations();
-                return;
-            }
-
+            if (!tickers) { updateAllCalculations(); return; }
             const url = `/.netlify/functions/getFmpData?tickers=${tickers}`;
-            
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Netlify Function 請求失敗`);
@@ -230,55 +232,25 @@
         async function saveNewTransaction() {
             const assetId = document.getElementById('add-lot-asset-id').value;
             const lots = parseFloat(document.getElementById('add-lot-amount').value);
-            if (!assetId || isNaN(lots) || lots === 0) {
-                alert('請輸入有效的 Lot 數量 (非零)。'); return;
-            }
+            if (!assetId || isNaN(lots) || lots === 0) { alert('請輸入有效的 Lot 數量 (非零)。'); return; }
             const asset = portfolio.find(a => a.asset_id === assetId);
             const cashAsset = portfolio.find(a => a.asset_id === 'cash');
             if (!asset || !cashAsset) { alert('找不到資產或現金項目。'); return; }
-            
             const transactionValue = lots * LOT_PRICE;
             const currentPrice = asset.currentPrice || asset.manual_price || asset.initial_price;
             if (!currentPrice) { alert('無法獲取目前價格，請稍後再試。'); return; }
-            
             const quantityChange = transactionValue / currentPrice;
-            if (lots < 0 && asset.quantity < Math.abs(quantityChange)) {
-                alert(`賣出數量超過持有數量！`); return;
-            }
-            if (lots > 0 && cashAsset.value < transactionValue) {
-                alert('現金餘額不足！'); return;
-            }
-
-            const { error: logError } = await db.from('transactions').insert([
-                { asset_id: assetId, lots: lots, transaction_value: transactionValue }
-            ]);
-
-            if (logError) {
-                alert('寫入交易日誌失敗，操作已取消。');
-                return;
-            }
-
+            if (lots < 0 && asset.quantity < Math.abs(quantityChange)) { alert(`賣出數量超過持有數量！`); return; }
+            if (lots > 0 && cashAsset.value < transactionValue) { alert('現金餘額不足！'); return; }
+            const { error: logError } = await db.from('transactions').insert([{ asset_id: assetId, lots: lots, transaction_value: transactionValue }]);
+            if (logError) { alert('寫入交易日誌失敗，操作已取消。'); return; }
             const newCostBasis = asset.cost_basis + transactionValue;
             const newQuantity = asset.quantity + quantityChange;
             const newCashValue = cashAsset.value - transactionValue;
-            
             const { error: assetError } = await db.from('assets').update({ cost_basis: newCostBasis, quantity: newQuantity }).eq('asset_id', assetId);
             const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
-
-            if (assetError || cashError) {
-                alert('更新資產總額失敗，但交易日誌已記錄。請手動校正。');
-            } else {
-                asset.cost_basis = newCostBasis;
-                asset.quantity = newQuantity;
-                cashAsset.value = newCashValue;
-                cashAsset.cost_basis = newCashValue;
-                transactions.push({ asset_id: assetId, lots: lots });
-
-                renderMainTable();
-                renderOtherAssetsTable();
-                updateAllCalculations();
-                closeAddLotModal();
-            }
+            if (assetError || cashError) { alert('更新資產總額失敗，但交易日誌已記錄。請手動校正。'); } 
+            else { await initialize(); closeAddLotModal(); }
         }
 
         async function saveNewAsset() {
@@ -287,56 +259,32 @@
             const ticker = document.getElementById('new-asset-ticker').value || null;
             const type = document.getElementById('new-asset-type').value;
             const lots = parseFloat(document.getElementById('new-asset-lots').value);
-
-            if (!name || !short_name || !type || isNaN(lots) || lots <= 0) {
-                alert('請填寫所有必填欄位並輸入有效的 Lot 數量。'); return;
-            }
-
+            if (!name || !short_name || !type || isNaN(lots) || lots <= 0) { alert('請填寫所有必填欄位並輸入有效的 Lot 數量。'); return; }
             const cashAsset = portfolio.find(a => a.asset_id === 'cash');
             const cost_basis = lots * LOT_PRICE;
-
-            if (!cashAsset || cashAsset.value < cost_basis) {
-                alert('現金餘額不足！'); return;
-            }
-
+            if (!cashAsset || cashAsset.value < cost_basis) { alert('現金餘額不足！'); return; }
             let currentPrice = null;
             if (ticker) {
                 const url = `/.netlify/functions/getFmpData?tickers=${ticker}`;
                 try {
                     const response = await fetch(url);
                     const data = await response.json();
-                    if (data && data.length > 0) {
-                        currentPrice = data[0].price;
-                    }
-                } catch (e) {
-                    alert('無法獲取新 ETF 的價格，請稍後再試。'); return;
-                }
+                    if (data && data.length > 0) { currentPrice = data[0].price; }
+                } catch (e) { alert('無法獲取新 ETF 的價格，請稍後再試。'); return; }
             } else { 
                 const price = prompt(`請輸入 ${short_name} 的目前單位價格:`);
                 currentPrice = parseFloat(price);
             }
-            
-            if (!currentPrice || isNaN(currentPrice) || currentPrice <= 0) {
-                alert('無法獲取或輸入無效的單位價格。'); return;
-            }
-
+            if (!currentPrice || isNaN(currentPrice) || currentPrice <= 0) { alert('無法獲取或輸入無效的單位價格。'); return; }
             const quantity = cost_basis / currentPrice;
             const asset_id = short_name.toLowerCase().replace(/\s/g, '_');
-            const newAssetData = {
-                asset_id, name, short_name, ticker, type, quantity, cost_basis,
-                manual_price: type === 'Fund' ? currentPrice : null,
-                initial_price: type === 'ETF' ? currentPrice : null
-            };
+            const newAssetData = { asset_id, name, short_name, ticker, type, quantity, cost_basis, manual_price: type === 'Fund' ? currentPrice : null, initial_price: type === 'ETF' ? currentPrice : null };
             const newCashValue = cashAsset.value - cost_basis;
             const { error: insertError } = await db.from('assets').insert([newAssetData]);
             const { error: logError } = await db.from('transactions').insert([{ asset_id, lots, transaction_value: cost_basis }]);
             const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
-            if (insertError || cashError || logError) {
-                alert('新增資產到雲端失敗。');
-            } else {
-                await initialize();
-                closeNewAssetModal();
-            }
+            if (insertError || cashError || logError) { alert('新增資產到雲端失敗。'); } 
+            else { await initialize(); closeNewAssetModal(); }
         }
 
         async function saveOtherAsset() {
@@ -358,25 +306,34 @@
                 const { error: insertError } = await db.from('assets').insert([assetData]);
                 error = insertError;
             }
-            if (error) {
-                alert('儲存數據到雲端失敗。');
-            } else {
-                await initialize();
-                closeOtherAssetModal();
-            }
+            if (error) { alert('儲存數據到雲端失敗。'); } 
+            else { await initialize(); closeOtherAssetModal(); }
         }
         async function confirmDelete() {
             const id = document.getElementById('confirm-delete-btn').dataset.assetId;
             const { error } = await db.from('assets').delete().eq('id', id);
-            if (error) {
-                alert('從雲端刪除數據失敗。');
-            } else {
-                await initialize();
-                closeConfirmModal();
-            }
+            if (error) { alert('從雲端刪除數據失敗。'); } 
+            else { await initialize(); closeConfirmModal(); }
         }
         
-        // --- 渲染與計算 (與之前版本類似) ---
+        async function saveCashMovement() {
+            const type = document.getElementById('cash-flow-type').value;
+            const amount = parseFloat(document.getElementById('cash-flow-amount').value);
+            const description = document.getElementById('cash-flow-desc').value;
+            if (isNaN(amount) || amount <= 0) { alert('請輸入有效的金額。'); return; }
+            const cashAsset = portfolio.find(a => a.asset_id === 'cash');
+            if (!cashAsset) { alert('找不到現金資產。'); return; }
+            const amountChange = type === 'deposit' ? amount : -amount;
+            if (type === 'withdraw' && cashAsset.value < amount) { alert('現金餘額不足以取出。'); return; }
+            const { error: logError } = await db.from('cash_movements').insert([{ type, amount, description }]);
+            if (logError) { alert('寫入資金流水失敗。'); return; }
+            const newCashValue = cashAsset.value + amountChange;
+            const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
+            if (cashError) { alert('更新現金總額失敗。'); }
+            else { await initialize(); closeCashModal(); }
+        }
+
+        // --- 渲染與計算 ---
         function sortMainAssets() {
             mainAssets.sort((a, b) => {
                 const key = currentSort.key;
@@ -397,7 +354,6 @@
                 row.id = `row-${asset.asset_id}`;
                 row.className = 'hover:bg-gray-700/50 transition-colors duration-200';
                 let priceCellContent = asset.type === 'ETF' ? `<span id="price-${asset.asset_id}">...</span>` : `<input type="number" step="0.0001" value="${asset.manual_price}" onchange="handleManualUpdate('${asset.asset_id}', this.value)" class="price-input text-white">`;
-                
                 const monthlyLots = transactions.filter(t => t.asset_id === asset.asset_id).reduce((sum, t) => sum + t.lots, 0);
                 let monthlyLotsDisplay = '';
                 if (monthlyLots !== 0) {
@@ -405,23 +361,7 @@
                     const color = monthlyLots > 0 ? 'text-green-400' : 'text-red-400';
                     monthlyLotsDisplay = `<span class="text-xs ${color}">本月: ${sign}${monthlyLots} lots</span>`;
                 }
-
-                row.innerHTML = `
-                    <td class="sticky-col bg-gray-800 px-2 sm:px-4 py-3 whitespace-nowrap"><div class="font-medium text-white" title="${asset.name}">${asset.short_name}</div><div class="text-xs text-gray-400">${asset.type}</div></td>
-                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right">${formatNumber(asset.quantity, 2)}</td>
-                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right text-gray-400">${formatCurrency(asset.cost_basis)}</td>
-                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right">${priceCellContent}</td>
-                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right font-semibold" id="value-${asset.asset_id}">...</td>
-                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right" id="pl-${asset.asset_id}">...</td>
-                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right font-medium" id="return-${asset.asset_id}">...</td>
-                    <td class="px-2 sm:px-4 py-3 whitespace-nowrap text-center">
-                        <div class="flex flex-col items-center space-y-1">
-                            <button onclick="openAddLotModal('${asset.asset_id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-sm w-full">新增交易</button>
-                            <div class="text-xs text-gray-500 h-4" id="monthly-lots-${asset.asset_id}">
-                                ${monthlyLotsDisplay}
-                            </div>
-                        </div>
-                    </td>`;
+                row.innerHTML = `<td class="sticky-col bg-gray-800 px-2 sm:px-4 py-3 whitespace-nowrap"><div class="font-medium text-white" title="${asset.name}">${asset.short_name}</div><div class="text-xs text-gray-400">${asset.type}</div></td><td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right">${formatNumber(asset.quantity, 2)}</td><td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right text-gray-400">${formatCurrency(asset.cost_basis)}</td><td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right">${priceCellContent}</td><td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right font-semibold" id="value-${asset.asset_id}">...</td><td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right" id="pl-${asset.asset_id}">...</td><td class="px-2 sm:px-4 py-3 whitespace-nowrap text-right font-medium" id="return-${asset.asset_id}">...</td><td class="px-2 sm:px-4 py-3 whitespace-nowrap text-center"><div class="flex flex-col items-center space-y-1"><button onclick="openAddLotModal('${asset.asset_id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-sm w-full">新增交易</button><div class="text-xs text-gray-500 h-4" id="monthly-lots-${asset.asset_id}">${monthlyLotsDisplay}</div></div></td>`;
                 tbody.appendChild(row);
             });
         }
@@ -435,15 +375,21 @@
                 tbody.appendChild(row);
             });
         }
+        function renderCashFlowTable() {
+            const tbody = document.getElementById('cashflow-body');
+            tbody.innerHTML = '';
+            cashMovements.forEach(move => {
+                const row = document.createElement('tr');
+                const isDeposit = move.type === 'deposit';
+                row.className = 'hover:bg-gray-700/50';
+                row.innerHTML = `<td class="px-4 py-3 whitespace-nowrap text-gray-400">${new Date(move.created_at).toLocaleDateString('en-CA')}</td><td class="px-4 py-3 whitespace-nowrap"><span class="font-semibold ${isDeposit ? 'text-green-400' : 'text-red-400'}">${isDeposit ? '存入' : '取出'}</span></td><td class="px-4 py-3 whitespace-nowrap text-gray-300">${move.description || ''}</td><td class="px-4 py-3 whitespace-nowrap text-right font-medium">${formatCurrency(move.amount)}</td>`;
+                tbody.appendChild(row);
+            });
+        }
         async function handleManualUpdate(assetId, newPrice) {
             const { error } = await db.from('assets').update({ manual_price: newPrice }).eq('asset_id', assetId);
-            if (error) {
-                alert('更新雲端數據失敗');
-            } else {
-                const asset = portfolio.find(a => a.asset_id === assetId);
-                asset.manual_price = parseFloat(newPrice);
-                updateAllCalculations();
-            }
+            if (error) { alert('更新雲端數據失敗'); } 
+            else { const asset = portfolio.find(a => a.asset_id === assetId); asset.manual_price = parseFloat(newPrice); updateAllCalculations(); }
         }
         function updateAllCalculations() {
             let totalValue = 0, totalCost = 0, mainAssetsTotalValue = 0, mainAssetsTotalCost = 0, otherAssetsTotalValue = 0;
@@ -484,9 +430,9 @@
         window.handleManualUpdate = handleManualUpdate;
         window.openNewAssetModal = openNewAssetModal; window.closeNewAssetModal = closeNewAssetModal;
         window.saveNewAsset = saveNewAsset;
+        window.openCashModal = openCashModal; window.closeCashModal = closeCashModal; window.saveCashMovement = saveCashMovement;
 
-        // --- Helper and UI functions (Unchanged) ---
-        // *** FIX: Added updateAllCalculations() call after sorting and re-rendering ***
+        // --- Helper and UI functions ---
         function handleSort(key) { if (currentSort.key === key) { currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc'; } else { currentSort.key = key; currentSort.order = 'asc'; } sortMainAssets(); renderMainTable(); updateAllCalculations(); }
         function renderPortfolioFooter(totalValue, totalCost) { const footer = document.getElementById('portfolio-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="sticky-col bg-gray-700/50 px-2 sm:px-4 py-3 text-right" colspan="2">投資組合總計</td><td class="px-2 sm:px-4 py-3 text-right text-gray-400">${formatCurrency(totalCost)}</td><td class="px-2 sm:px-4 py-3"></td><td class="px-2 sm:px-4 py-3 text-right">${formatCurrency(totalValue)}</td><td class="px-2 sm:px-4 py-3" colspan="3"></td></tr>`; }
         function renderOtherAssetsFooter(total) { const footer = document.getElementById('other-assets-footer'); footer.innerHTML = `<tr class="bg-gray-700/50 font-bold"><td class="px-4 py-3 text-right" colspan="3">定存與現金總計</td><td class="px-4 py-3 text-right">${formatCurrency(total)}</td><td class="px-4 py-3"></td></tr>`;}
@@ -498,6 +444,8 @@
         function closeConfirmModal() { const modal = document.getElementById('confirm-modal'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300); }
         function openNewAssetModal() { const modal = document.getElementById('new-asset-modal'); modal.classList.remove('hidden'); setTimeout(() => modal.classList.remove('opacity-0'), 10); }
         function closeNewAssetModal() { const modal = document.getElementById('new-asset-modal'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300); }
+        function openCashModal(type) { const modal = document.getElementById('cash-flow-modal'); document.getElementById('cash-flow-type').value = type; document.getElementById('cash-flow-modal-title').textContent = type === 'deposit' ? '存入資金' : '取出資金'; document.getElementById('save-cash-flow-btn').className = `px-4 py-2 rounded-md ${type === 'deposit' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`; document.getElementById('cash-flow-amount').value = ''; document.getElementById('cash-flow-desc').value = ''; modal.classList.remove('hidden'); setTimeout(() => modal.classList.remove('opacity-0'), 10); }
+        function closeCashModal() { const modal = document.getElementById('cash-flow-modal'); modal.classList.add('opacity-0'); setTimeout(() => modal.classList.add('hidden'), 300); }
         function formatCurrency(value) { return (value || 0).toLocaleString('en-NZ', { style: 'currency', currency: 'NZD' }); }
         function formatNumber(value, digits = 2) { return (value || 0).toFixed(digits); }
         function updatePlCell(elementId, value, isPercentage = false) { const element = document.getElementById(elementId); if (!element) return; const numValue = value || 0; const formattedValue = isPercentage ? `${formatNumber(numValue, 2)}%` : formatCurrency(numValue); element.textContent = formattedValue; let classList = []; if (elementId.startsWith('total-')) { classList.push('text-3xl', 'font-bold', 'text-white', 'mt-2'); } else { classList.push('px-2 sm:px-4', 'py-3', 'whitespace-nowrap', 'text-right', 'font-medium'); } if (numValue > 0) { classList.push('text-green-400'); element.textContent = '+' + element.textContent; } else if (numValue < 0) { classList.push('text-red-400'); } else { if (elementId.startsWith('total-')) { classList.push('text-white'); } else { classList.push('text-gray-400'); } } element.className = classList.join(' '); }
@@ -505,14 +453,10 @@
         // --- Price Tracker Specific Logic ---
         let trackerInitialized = false;
         function switchTab(tabName) {
-            document.getElementById('view-portfolio').classList.toggle('hidden', tabName !== 'portfolio');
-            document.getElementById('view-other').classList.toggle('hidden', tabName !== 'other');
-            document.getElementById('view-tracker').classList.toggle('hidden', tabName !== 'tracker');
-            
-            document.getElementById('tab-portfolio').classList.toggle('active', tabName === 'portfolio');
-            document.getElementById('tab-other').classList.toggle('active', tabName === 'other');
-            document.getElementById('tab-tracker').classList.toggle('active', tabName === 'tracker');
-
+            ['portfolio', 'other', 'tracker', 'cashflow'].forEach(view => {
+                document.getElementById(`view-${view}`).classList.toggle('hidden', view !== tabName);
+                document.getElementById(`tab-${view}`).classList.toggle('active', view === tabName);
+            });
             if (tabName === 'tracker' && !trackerInitialized) {
                 initializeTracker();
                 trackerInitialized = true;
@@ -527,15 +471,12 @@
         function loadTradingViewWidgets() {
             const createWidget = (containerId, symbol) => {
                 const container = document.getElementById(containerId);
-                if (container.firstChild) return; // Avoid re-creating widget
+                if (container.firstChild) return;
                 const script = document.createElement('script');
                 script.type = 'text/javascript';
                 script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js';
                 script.async = true;
-                script.innerHTML = JSON.stringify({
-                    "interval": "1D", "width": "100%", "isTransparent": true, "height": "450",
-                    "symbol": symbol, "showIntervalTabs": true, "locale": "zh_TW", "colorTheme": "dark"
-                });
+                script.innerHTML = JSON.stringify({ "interval": "1D", "width": "100%", "isTransparent": true, "height": "450", "symbol": symbol, "showIntervalTabs": true, "locale": "zh_TW", "colorTheme": "dark" });
                 container.appendChild(script);
             };
             createWidget('tv-spx', 'SP:SPX');
