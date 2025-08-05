@@ -54,7 +54,6 @@
         }
         .badge-red { color: #fff; background-color: #991b1b; } /* red-800 */
         .badge-blue { color: #fff; background-color: #1e40af; } /* blue-800 */
-        /* *** NEW: Badge colors for tracker tab *** */
         .badge-amber { color: #fff; background-color: #b45309; } /* amber-700 */
         .badge-slate { color: #fff; background-color: #475569; } /* slate-600 */
         .badge-teal { color: #fff; background-color: #0f766e; } /* teal-700 */
@@ -248,7 +247,19 @@
             const { error: assetError } = await db.from('assets').update({ cost_basis: newCostBasis, quantity: newQuantity }).eq('asset_id', assetId);
             const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
             if (assetError || cashError) { alert('更新資產總額失敗，但交易日誌已記錄。請手動校正。'); } 
-            else { await initialize(); closeAddLotModal(); }
+            else { 
+                // *** FIX: Local update instead of full re-initialization ***
+                asset.cost_basis = newCostBasis;
+                asset.quantity = newQuantity;
+                cashAsset.value = newCashValue;
+                cashAsset.cost_basis = newCashValue;
+                transactions.push({ asset_id: assetId, lots: lots });
+
+                renderMainTable(); // Re-render without sorting
+                renderOtherAssetsTable();
+                updateAllCalculations();
+                closeAddLotModal();
+            }
         }
 
         async function saveNewAsset() {
