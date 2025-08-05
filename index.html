@@ -52,14 +52,12 @@
             border-radius: 0.375rem;
             margin-left: 8px;
         }
-        .badge-red {
-            color: #fff;
-            background-color: #991b1b; /* red-800 */
-        }
-        .badge-blue {
-            color: #fff;
-            background-color: #1e40af; /* blue-800 */
-        }
+        .badge-red { color: #fff; background-color: #991b1b; } /* red-800 */
+        .badge-blue { color: #fff; background-color: #1e40af; } /* blue-800 */
+        /* *** NEW: Badge colors for tracker tab *** */
+        .badge-amber { color: #fff; background-color: #b45309; } /* amber-700 */
+        .badge-slate { color: #fff; background-color: #475569; } /* slate-600 */
+        .badge-teal { color: #fff; background-color: #0f766e; } /* teal-700 */
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -316,13 +314,10 @@
                 const cashAsset = portfolio.find(a => a.asset_id === 'cash');
                 const amountToReverse = movement.type === 'deposit' ? -movement.amount : movement.amount;
                 const newCashValue = cashAsset.value + amountToReverse;
-
                 const { error: deleteError } = await db.from('cash_movements').delete().eq('id', id);
                 const { error: cashError } = await db.from('assets').update({ value: newCashValue, cost_basis: newCashValue }).eq('asset_id', 'cash');
-
                 if (deleteError || cashError) { alert('刪除資金流水失敗。'); }
                 else { await initialize(); }
-
             } else { // asset
                 const { error } = await db.from('assets').delete().eq('id', id);
                 if (error) { alert('從雲端刪除數據失敗。'); } 
@@ -351,7 +346,7 @@
                 if (type === 'withdraw' && cashAsset.value < diff) { alert('現金餘額不足以完成此修改。'); return; }
                 const { error: updateError } = await db.from('cash_movements').update(logData).eq('id', id);
                 error = updateError;
-                amountChange = diff; // Only apply the difference to cash
+                amountChange = diff;
             } else { // Creating
                 if (type === 'withdraw' && cashAsset.value < amount) { alert('現金餘額不足以取出。'); return; }
                 const { error: insertError } = await db.from('cash_movements').insert([logData]);
@@ -555,6 +550,9 @@
             const etfList = ["USV", "USM", "USA", "USG", "TWF", "USF", "VT", "VOO", "VTI"];
             const redHighlight = ["VT", "VOO", "VTI"];
             const blueHighlight = ["USV", "USM", "USA", "USG", "TWF", "USF"];
+            const bitcoin = ["BTC USD"];
+            const preciousMetals = ["Gold (XAU/USD)", "Silver (XAG/USD)"];
+            const marketIndices = ["S&P 500 Index", "NASDAQ Composite", "VIX (Volatility Index)"];
 
             const indicesBody = document.getElementById('indices-body');
             const etfBody = document.getElementById('etf-body');
@@ -577,11 +575,11 @@
                 if (isNaN(price)) return;
                 
                 let nameHtml = name;
-                if (redHighlight.includes(name)) {
-                    nameHtml += `<span class="badge badge-red">核心</span>`;
-                } else if (blueHighlight.includes(name)) {
-                    nameHtml += `<span class="badge badge-blue">持股</span>`;
-                }
+                if (redHighlight.includes(name)) { nameHtml += `<span class="badge badge-red">核心</span>`; } 
+                else if (blueHighlight.includes(name)) { nameHtml += `<span class="badge badge-blue">持股</span>`; }
+                else if (bitcoin.includes(name)) { nameHtml += `<span class="badge badge-amber">比特幣</span>`; }
+                else if (preciousMetals.includes(name)) { nameHtml += `<span class="badge badge-slate">貴金屬</span>`; }
+                else if (marketIndices.includes(name)) { nameHtml += `<span class="badge badge-teal">大盤指數</span>`; }
 
                 const rowHtml = `<tr class="hover:bg-gray-700/50"><td class="p-4 font-medium flex items-center w-1/2">${nameHtml}</td><td class="p-4 text-right w-1/4">${price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td class="p-4 text-right font-medium ${changeColor} w-1/4">${changeText}</td></tr>`;
                 if (indicesList.includes(name)) {
